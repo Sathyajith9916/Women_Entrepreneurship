@@ -20,7 +20,12 @@ import {
   Check,
   X,
   ExternalLink,
-  Store
+  Store,
+  MapPin,
+  Phone,
+  Printer,
+  ShieldCheck,
+  MessageSquare
 } from 'lucide-react';
 import { CATEGORIES, LOCATIONS, FESTIVAL_OPTIONS } from '../data/seedData';
 import AiCatalogueModal from './AiCatalogueModal';
@@ -50,7 +55,11 @@ export default function SellerDashboard() {
   const [showPosterModal, setShowPosterModal] = useState(false);
   const [posterContext, setPosterContext] = useState(null);
 
-  // New product form modal/drawer
+  // Request changes modal state
+  const [requestChangeOrder, setRequestChangeOrder] = useState(null);
+  const [changeMessage, setChangeMessage] = useState('We can fulfill tomorrow morning. Is that acceptable?');
+
+  // New product form
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [newProdName, setNewProdName] = useState('');
   const [newProdCategory, setNewProdCategory] = useState(activeSeller?.category || 'Food');
@@ -59,7 +68,7 @@ export default function SellerDashboard() {
   const [newProdDesc, setNewProdDesc] = useState('');
   const [newProdIsQuote, setNewProdIsQuote] = useState(false);
 
-  // Festival offer form modal
+  // Festival offer form
   const [isAddingFestival, setIsAddingFestival] = useState(false);
   const [festName, setFestName] = useState('Deepavali Special');
   const [festTitle, setFestTitle] = useState('Deepavali Holige Gift Pack');
@@ -67,22 +76,66 @@ export default function SellerDashboard() {
   const [festOriginalPrice, setFestOriginalPrice] = useState(250);
   const [festOfferPrice, setFestOfferPrice] = useState(220);
 
-  // Status & Availability management
-  const [statusInput, setStatusInput] = useState(activeSeller?.status || 'OPEN');
-  const [noticeInput, setNoticeInput] = useState(activeSeller?.unavailableNotice || '');
+  // Full Profile Edit Form State
+  const [profileForm, setProfileForm] = useState({
+    name: activeSeller?.name || '',
+    ownerName: activeSeller?.ownerName || '',
+    category: activeSeller?.category || 'Food',
+    location: activeSeller?.location || 'Vidyanagar',
+    address: activeSeller?.address || '',
+    phone: activeSeller?.phone || '',
+    upiId: activeSeller?.upiId || '',
+    description: activeSeller?.description || '',
+    workingHours: activeSeller?.workingHours || '9:00 AM - 7:00 PM',
+    deliveryAvailable: activeSeller?.deliveryAvailable ?? true,
+    pickupAvailable: activeSeller?.pickupAvailable ?? true,
+    status: activeSeller?.status || 'OPEN',
+    unavailableNotice: activeSeller?.unavailableNotice || ''
+  });
+
+  // Sync profile form when activeSeller changes
+  React.useEffect(() => {
+    if (activeSeller) {
+      setProfileForm({
+        name: activeSeller.name,
+        ownerName: activeSeller.ownerName,
+        category: activeSeller.category,
+        location: activeSeller.location,
+        address: activeSeller.address || '',
+        phone: activeSeller.phone,
+        upiId: activeSeller.upiId || '',
+        description: activeSeller.description,
+        workingHours: activeSeller.workingHours,
+        deliveryAvailable: activeSeller.deliveryAvailable,
+        pickupAvailable: activeSeller.pickupAvailable,
+        status: activeSeller.status,
+        unavailableNotice: activeSeller.unavailableNotice || ''
+      });
+    }
+  }, [activeSeller.id]);
 
   // Filter orders for active seller
   const sellerOrders = orders.filter(o => o.sellerId === activeSeller.id);
   const sellerProducts = products.filter(p => p.sellerId === activeSeller.id);
 
-  // Pending orders requiring seller action
+  // Categorize orders
   const pendingRequests = sellerOrders.filter(o => o.status === 'REQUESTED');
-  const acceptedOrders = sellerOrders.filter(o => ['ACCEPTED', 'READY', 'OUT_FOR_DELIVERY'].includes(o.status));
+  const acceptedOrders = sellerOrders.filter(o => ['ACCEPTED', 'READY', 'PICKUP PENDING', 'PICKED UP', 'OUT_FOR_DELIVERY'].includes(o.status));
   const completedOrders = sellerOrders.filter(o => o.status === 'DELIVERED');
 
-  const handleStatusSave = (e) => {
+  const handleProfileSave = (e) => {
     e.preventDefault();
-    setSellerStatus(activeSeller.id, statusInput, noticeInput);
+    updateSeller(activeSeller.id, profileForm);
+  };
+
+  const handleQuickStatusChange = (status, notice = "") => {
+    const updated = {
+      ...profileForm,
+      status,
+      unavailableNotice: notice !== undefined ? notice : profileForm.unavailableNotice
+    };
+    setProfileForm(updated);
+    setSellerStatus(activeSeller.id, status, updated.unavailableNotice);
   };
 
   const handleAddProductSubmit = (e) => {
@@ -125,9 +178,16 @@ export default function SellerDashboard() {
     setShowPosterModal(true);
   };
 
+  const handleSendChangeRequest = () => {
+    if (requestChangeOrder) {
+      updateOrderStatus(requestChangeOrder.id, 'REQUESTED', `Seller note: ${changeMessage}`);
+      setRequestChangeOrder(null);
+    }
+  };
+
   return (
     <div>
-      {/* Seller Hub Switcher & Overview Header */}
+      {/* Business Switcher & Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -152,23 +212,16 @@ export default function SellerDashboard() {
           </div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{activeSeller.name}</h1>
           <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Proprietor: <span style={{ fontWeight: 600 }}>{activeSeller.ownerName}</span> • Phone: {activeSeller.phone}
+            Proprietor: <span style={{ fontWeight: 600 }}>{activeSeller.ownerName}</span> • Phone: {activeSeller.phone} • UPI: <code>{activeSeller.upiId}</code>
           </div>
         </div>
 
-        {/* Quick select another seller for demo convenience */}
+        {/* Quick select another seller */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '0.8125rem', fontWeight: 600 }}>Switch Business:</span>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 600 }}>Active Seller:</span>
           <select
             value={activeSeller.id}
-            onChange={(e) => {
-              setActiveSellerId(e.target.value);
-              const found = sellers.find(s => s.id === e.target.value);
-              if (found) {
-                setStatusInput(found.status);
-                setNoticeInput(found.unavailableNotice || '');
-              }
-            }}
+            onChange={(e) => setActiveSellerId(e.target.value)}
             className="select-control"
             style={{ width: 'auto', fontSize: '0.8125rem' }}
           >
@@ -180,6 +233,28 @@ export default function SellerDashboard() {
           </select>
         </div>
       </div>
+
+      {/* FEATURE 14: SELLER AVAILABILITY WARNING BANNER */}
+      {activeSeller.status === 'TEMPORARILY CLOSED' && (
+        <div className="callout callout-warning" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertCircle size={18} color="var(--danger)" />
+            <div>
+              <strong>Store is Temporarily Closed:</strong> {activeSeller.unavailableNotice || "Not accepting orders at the moment."}
+              <div style={{ fontSize: '0.75rem', color: '#92400e' }}>
+                New customer orders are blocked until you re-open.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => handleQuickStatusChange('OPEN', '')}
+            className="btn btn-primary btn-sm"
+            style={{ marginTop: '0.25rem' }}
+          >
+            Re-Open Store Now
+          </button>
+        </div>
+      )}
 
       {/* FEATURE 9 — BUSINESS INSIGHTS DASHBOARD */}
       <div style={{
@@ -249,7 +324,7 @@ export default function SellerDashboard() {
           { id: 'catalogue', label: `My Catalogue (${sellerProducts.length})` },
           { id: 'festivals', label: `Festival Campaigns (${activeSeller.festivalOffers?.length || 0})` },
           { id: 'history', label: 'Business Ledger & Credit Readiness' },
-          { id: 'profile', label: 'Store Status & Notice' }
+          { id: 'profile', label: 'Business Profile & Status' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -292,7 +367,7 @@ export default function SellerDashboard() {
                 color: 'var(--text-muted)',
                 backgroundColor: 'var(--bg-secondary)'
               }}>
-                No new pending requests. New customer orders will appear here for your review and approval.
+                No new pending requests. When a customer orders, it appears here for your review and approval.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -316,7 +391,7 @@ export default function SellerDashboard() {
                           Customer: {order.customerName} ({order.customerPhone})
                         </h4>
                         <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                          Type: <strong>{order.orderType}</strong> • Address: {order.customerAddress}
+                          Fulfillment: <strong>{order.orderType}</strong> • Address: {order.customerAddress}
                         </div>
                       </div>
 
@@ -341,7 +416,12 @@ export default function SellerDashboard() {
                       ))}
                       {order.notes && (
                         <div style={{ marginTop: '0.35rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>
-                          Note: "{order.notes}"
+                          Customer note: "{order.notes}"
+                        </div>
+                      )}
+                      {order.statusNotes && (
+                        <div style={{ marginTop: '0.35rem', color: 'var(--accent)', fontWeight: 600 }}>
+                          {order.statusNotes}
                         </div>
                       )}
                     </div>
@@ -349,7 +429,7 @@ export default function SellerDashboard() {
                     {/* Action buttons: ACCEPT, REJECT, REQUEST CHANGES */}
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap', marginTop: '0.4rem' }}>
                       <button
-                        onClick={() => updateOrderStatus(order.id, 'REJECTED', 'Seller unable to fulfill due to current load')}
+                        onClick={() => updateOrderStatus(order.id, 'REJECTED', 'Seller unable to fulfill order at this time.')}
                         className="btn btn-danger btn-sm"
                       >
                         <X size={14} />
@@ -358,12 +438,13 @@ export default function SellerDashboard() {
 
                       <button
                         onClick={() => {
-                          const note = prompt("Enter change request message for customer:", "We can fulfill tomorrow morning. Is that acceptable?");
-                          if (note) updateOrderStatus(order.id, 'REQUESTED', note);
+                          setRequestChangeOrder(order);
+                          setChangeMessage('We can fulfill tomorrow morning. Is that acceptable?');
                         }}
                         className="btn btn-secondary btn-sm"
                       >
-                        Request Changes
+                        <MessageSquare size={14} />
+                        <span>Request Changes</span>
                       </button>
 
                       <button
@@ -394,7 +475,7 @@ export default function SellerDashboard() {
                 color: 'var(--text-muted)',
                 fontSize: '0.875rem'
               }}>
-                No accepted orders in progress.
+                No accepted orders currently in progress.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -411,7 +492,7 @@ export default function SellerDashboard() {
                         </span>
                       </div>
                       <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                        Customer: {order.customerName} • {order.orderType}
+                        Customer: {order.customerName} ({order.customerPhone}) • Fulfillment: <strong>{order.orderType}</strong>
                       </div>
                       <div style={{ fontSize: '0.775rem', color: 'var(--text-subtle)' }}>
                         Items: {order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}
@@ -433,7 +514,7 @@ export default function SellerDashboard() {
                           onClick={() => updateOrderStatus(order.id, 'READY')}
                           className="btn btn-secondary btn-sm"
                         >
-                          Mark Ready for Pickup/Delivery
+                          Mark Ready
                         </button>
                       )}
 
@@ -442,13 +523,13 @@ export default function SellerDashboard() {
                           onClick={() => updateOrderStatus(order.id, 'DELIVERED')}
                           className="btn btn-primary btn-sm"
                         >
-                          Customer Picked Up (Complete)
+                          Customer Picked Up &rarr; Complete
                         </button>
                       )}
 
                       {order.status === 'READY' && order.orderType === 'DELIVERY' && !order.deliveryPartnerId && (
                         <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>
-                          Awaiting Delivery Partner assignment...
+                          Waiting for Delivery Partner...
                         </span>
                       )}
                     </div>
@@ -467,7 +548,7 @@ export default function SellerDashboard() {
             <div>
               <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Store Products & Services</h2>
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                Keep your prices, units and availability up-to-date
+                Add items, manage prices and units, or generate an AI listing with one click.
               </p>
             </div>
 
@@ -490,7 +571,7 @@ export default function SellerDashboard() {
             </div>
           </div>
 
-          {/* Add product form modal/card */}
+          {/* Add product form */}
           {isAddingProduct && (
             <div className="card" style={{ marginBottom: '1.5rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--accent-border)' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>Add New Product or Service</h3>
@@ -663,7 +744,7 @@ export default function SellerDashboard() {
             </button>
           </div>
 
-          {/* Create offer modal */}
+          {/* Create offer form */}
           {isAddingFestival && (
             <div className="card" style={{ marginBottom: '1.5rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--accent-border)' }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>Create Festive Campaign</h3>
@@ -796,30 +877,40 @@ export default function SellerDashboard() {
             backgroundColor: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
             borderRadius: 'var(--radius-md)',
-            padding: '1rem',
+            padding: '1.25rem',
             marginBottom: '1.25rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '0.75rem'
+            gap: '1rem'
           }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
-                <FileText size={16} color="var(--accent)" />
-                <h3 style={{ fontSize: '0.9375rem', fontWeight: 700 }}>
-                  Business Activity Ledger & Trust Readiness
+                <FileText size={18} color="var(--accent)" />
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>
+                  Business Activity Ledger & Financial Readiness
                 </h3>
               </div>
               <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                Verifiable digital transaction log demonstrating recurring volume and micro-business credit readiness.
+                Demonstrating verifiable transaction volume for future bank / NBFC working capital readiness without requiring formal balance sheets.
               </p>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                <span className="badge badge-accent">Financial Readiness: Building History</span>
+                <span className="badge badge-open">Fulfillment Rate: 98.4%</span>
+                <span className="badge badge-neutral">Average Ticket: ₹265</span>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span className="badge badge-accent">
-                {t.financialReadiness}
-              </span>
+            <div>
+              <button
+                onClick={() => window.print()}
+                className="btn btn-secondary btn-sm"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                <Printer size={14} />
+                <span>Print Ledger Statement</span>
+              </button>
             </div>
           </div>
 
@@ -873,38 +964,47 @@ export default function SellerDashboard() {
         </div>
       )}
 
-      {/* TAB 5: STORE STATUS & TEMPORARY NOTICE */}
+      {/* TAB 5: BUSINESS PROFILE & STATUS (FEATURE 2 COMPLETE) */}
       {activeTab === 'profile' && (
-        <div style={{ maxWidth: '640px' }}>
+        <div style={{ maxWidth: '780px' }}>
           <div className="card">
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-              Store Availability & Operating Status
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+              Edit Business Profile & Operating Status
             </h3>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-              Control when you accept orders. Setting your store to <strong>TEMPORARILY CLOSED</strong> pauses incoming orders and announces your return date clearly.
+              Update your commercial details, contact, and control whether you are currently accepting orders.
             </p>
 
-            <form onSubmit={handleStatusSave}>
-              <div className="input-group">
-                <label className="input-label">Current Operating Status</label>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <form onSubmit={handleProfileSave}>
+              {/* Status Section */}
+              <div style={{
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                padding: '1rem',
+                marginBottom: '1.25rem'
+              }}>
+                <label className="input-label" style={{ marginBottom: '0.5rem' }}>
+                  Current Availability Status *
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
                   {[
-                    { id: 'OPEN', label: 'OPEN for all orders', color: 'var(--success)' },
+                    { id: 'OPEN', label: 'OPEN (Accepting all orders)', color: 'var(--success)' },
                     { id: 'LIMITED ORDERS', label: 'LIMITED ORDERS (Festive Rush)', color: 'var(--warning)' },
-                    { id: 'TEMPORARILY CLOSED', label: 'TEMPORARILY CLOSED (Vacation / Travelling)', color: 'var(--danger)' }
+                    { id: 'TEMPORARILY CLOSED', label: 'TEMPORARILY CLOSED', color: 'var(--danger)' }
                   ].map(opt => (
                     <label
                       key={opt.id}
                       style={{
                         flex: 1,
-                        minWidth: '180px',
+                        minWidth: '200px',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
                         padding: '0.6rem 0.75rem',
                         border: '1px solid',
-                        borderColor: statusInput === opt.id ? opt.color : 'var(--border-color)',
-                        backgroundColor: statusInput === opt.id ? 'var(--bg-secondary)' : '#ffffff',
+                        borderColor: profileForm.status === opt.id ? opt.color : 'var(--border-color)',
+                        backgroundColor: profileForm.status === opt.id ? '#ffffff' : 'transparent',
                         borderRadius: 'var(--radius-md)',
                         cursor: 'pointer',
                         fontSize: '0.8125rem',
@@ -914,34 +1014,190 @@ export default function SellerDashboard() {
                       <input
                         type="radio"
                         name="storeStatus"
-                        checked={statusInput === opt.id}
-                        onChange={() => setStatusInput(opt.id)}
+                        checked={profileForm.status === opt.id}
+                        onChange={() => setProfileForm({ ...profileForm, status: opt.id })}
                       />
                       <span>{opt.label}</span>
                     </label>
                   ))}
                 </div>
+
+                <div className="input-group" style={{ marginBottom: 0 }}>
+                  <label className="input-label">Public Availability Notice</label>
+                  <input
+                    type="text"
+                    value={profileForm.unavailableNotice}
+                    onChange={e => setProfileForm({ ...profileForm, unavailableNotice: e.target.value })}
+                    className="input-control"
+                    placeholder="e.g. Temporarily closed until 15 October due to travel."
+                  />
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', marginTop: '0.25rem' }}>
+                    Shown prominently on your store profile to prevent orders when travelling or unavailable.
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Core Fields */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+                <div className="input-group">
+                  <label className="input-label">Business Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={profileForm.name}
+                    onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
+                    className="input-control"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">Owner / Proprietor Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={profileForm.ownerName}
+                    onChange={e => setProfileForm({ ...profileForm, ownerName: e.target.value })}
+                    className="input-control"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">Category *</label>
+                  <select
+                    value={profileForm.category}
+                    onChange={e => setProfileForm({ ...profileForm, category: e.target.value })}
+                    className="select-control"
+                  >
+                    {CATEGORIES.filter(c => c !== 'All').map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">Hubballi-Dharwad Locality *</label>
+                  <select
+                    value={profileForm.location}
+                    onChange={e => setProfileForm({ ...profileForm, location: e.target.value })}
+                    className="select-control"
+                  >
+                    {LOCATIONS.filter(l => l !== 'All').map(l => (
+                      <option key={l} value={l}>{l}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">Contact Phone (WhatsApp) *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={profileForm.phone}
+                    onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    className="input-control"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">UPI ID for Payments *</label>
+                  <input
+                    type="text"
+                    required
+                    value={profileForm.upiId}
+                    onChange={e => setProfileForm({ ...profileForm, upiId: e.target.value })}
+                    className="input-control"
+                    placeholder="e.g. yourname@okaxis"
+                  />
+                </div>
               </div>
 
               <div className="input-group">
-                <label className="input-label">
-                  Public Availability Notice (Shown on your customer page)
-                </label>
+                <label className="input-label">Full Address / Landmark</label>
                 <input
                   type="text"
-                  value={noticeInput}
-                  onChange={e => setNoticeInput(e.target.value)}
+                  value={profileForm.address}
+                  onChange={e => setProfileForm({ ...profileForm, address: e.target.value })}
                   className="input-control"
-                  placeholder="e.g. Temporarily closed until 15 October due to family function."
+                  placeholder="Street name, landmark, near circle..."
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <div className="input-group">
+                <label className="input-label">Working Hours</label>
+                <input
+                  type="text"
+                  value={profileForm.workingHours}
+                  onChange={e => setProfileForm({ ...profileForm, workingHours: e.target.value })}
+                  className="input-control"
+                  placeholder="e.g. 8:00 AM - 8:00 PM (Mon-Sat)"
+                />
+              </div>
+
+              <div className="input-group">
+                <label className="input-label">Short Business Description</label>
+                <textarea
+                  rows={2}
+                  value={profileForm.description}
+                  onChange={e => setProfileForm({ ...profileForm, description: e.target.value })}
+                  className="textarea-control"
+                />
+              </div>
+
+              {/* Delivery and Pickup Options */}
+              <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.25rem', padding: '0.5rem 0' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={profileForm.deliveryAvailable}
+                    onChange={e => setProfileForm({ ...profileForm, deliveryAvailable: e.target.checked })}
+                  />
+                  <span>Local Home Delivery Available</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={profileForm.pickupAvailable}
+                    onChange={e => setProfileForm({ ...profileForm, pickupAvailable: e.target.checked })}
+                  />
+                  <span>Customer Store Pickup Available</span>
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                 <button type="submit" className="btn btn-primary">
-                  Save Availability Status
+                  Save Complete Profile
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Request Change Modal */}
+      {requestChangeOrder && (
+        <div className="modal-overlay" onClick={() => setRequestChangeOrder(null)}>
+          <div className="modal-content" style={{ maxWidth: '480px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Request Changes for #{requestChangeOrder.id}</h3>
+              <button onClick={() => setRequestChangeOrder(null)} className="close-btn"><X size={18} /></button>
+            </div>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+              Send an adjustment message to <strong>{requestChangeOrder.customerName}</strong>.
+            </p>
+            <div className="input-group">
+              <label className="input-label">Change Note / Proposal</label>
+              <textarea
+                rows={3}
+                value={changeMessage}
+                onChange={e => setChangeMessage(e.target.value)}
+                className="textarea-control"
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              <button onClick={() => setRequestChangeOrder(null)} className="btn btn-secondary btn-sm">Cancel</button>
+              <button onClick={handleSendChangeRequest} className="btn btn-primary btn-sm">Send Proposal</button>
+            </div>
           </div>
         </div>
       )}

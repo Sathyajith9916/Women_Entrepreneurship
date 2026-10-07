@@ -1,14 +1,20 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { Search, MapPin, Filter, Store, Sparkles, Tag, ArrowRight, Phone, Clock, AlertTriangle } from 'lucide-react';
 import ProductCard from './ProductCard';
 import { CATEGORIES, LOCATIONS } from '../data/seedData';
 
-export default function CustomerDiscovery({ onSelectProduct, onSelectSeller }) {
+export default function CustomerDiscovery({ onSelectProduct, onSelectSeller, externalSearchQuery = '' }) {
   const { sellers, products, t } = useApp();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(externalSearchQuery);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedLocation, setSelectedLocation] = useState('All');
+
+  useEffect(() => {
+    if (externalSearchQuery !== undefined) {
+      setSearchQuery(externalSearchQuery);
+    }
+  }, [externalSearchQuery]);
 
   // Filter products based on search, category and location
   const filteredProducts = useMemo(() => {
@@ -297,7 +303,8 @@ export default function CustomerDiscovery({ onSelectProduct, onSelectSeller }) {
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'space-between'
+                  justifyContent: 'space-between',
+                  border: seller.name === "Lakshmi Home Foods" && searchQuery.toLowerCase().includes("holige") ? '2px solid var(--accent)' : '1px solid var(--border-color)'
                 }}
               >
                 <div>
@@ -427,7 +434,7 @@ export default function CustomerDiscovery({ onSelectProduct, onSelectSeller }) {
         )}
       </div>
 
-      {/* Tax and GST Regulatory Notice (Strict requirement from brief) */}
+      {/* Regulatory Tax Notice */}
       <div style={{
         marginTop: '2.5rem',
         padding: '0.75rem 1rem',

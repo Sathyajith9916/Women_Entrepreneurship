@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, QrCode, CheckCircle2, Copy, Check, ExternalLink, ShieldAlert } from 'lucide-react';
+import { X, QrCode, CheckCircle2, Copy, Check, ExternalLink, ShieldAlert, Share2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function PaymentModal({ order, onClose }) {
@@ -25,6 +25,19 @@ export default function PaymentModal({ order, onClose }) {
   const handleConfirmPaid = () => {
     markPaymentCompleted(order.id);
     setIsSuccess(true);
+  };
+
+  const handleWhatsAppReceipt = () => {
+    const text = encodeURIComponent(
+      `Namaskara *${seller?.name || 'Seller'}*,\n\n` +
+      `I have placed Order *#${order.id}* on Sakhi Market.\n` +
+      `Items: ${order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}\n` +
+      `Total Amount: *₹${amount}*\n` +
+      `Payment Status: *COMPLETED via UPI* to ${upiId}\n` +
+      `Fulfillment: ${order.orderType} to ${order.customerAddress}\n\n` +
+      `Kindly confirm and dispatch. Dhanyavadagalu!`
+    );
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
   return (
@@ -57,9 +70,21 @@ export default function PaymentModal({ order, onClose }) {
             <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
               Your payment of <strong>₹{amount}</strong> has been confirmed. The seller and delivery partner will be notified to proceed.
             </p>
-            <button onClick={onClose} className="btn btn-primary" style={{ width: '100%' }}>
-              Done
-            </button>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <button
+                onClick={handleWhatsAppReceipt}
+                className="btn btn-whatsapp"
+                style={{ width: '100%' }}
+              >
+                <Share2 size={15} />
+                <span>Send Payment Receipt to Seller on WhatsApp</span>
+              </button>
+
+              <button onClick={onClose} className="btn btn-secondary" style={{ width: '100%' }}>
+                Done
+              </button>
+            </div>
           </div>
         ) : (
           <div>

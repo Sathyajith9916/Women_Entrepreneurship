@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShoppingBag, Truck, MapPin, Phone, User, MessageSquare, AlertTriangle } from 'lucide-react';
+import { X, ShoppingBag, Truck, MapPin, Phone, User, MessageSquare, AlertTriangle, AlertCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function OrderModal({ product, seller, onClose, onOrderSuccess }) {
@@ -15,6 +15,8 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
 
   if (!product || !seller) return null;
 
+  const isClosed = seller?.status === "TEMPORARILY CLOSED";
+  const isLimited = seller?.status === "LIMITED ORDERS";
   const isQuote = product.isQuoteBased;
   const deliveryFee = orderType === 'DELIVERY' ? 30 : 0;
   const subtotal = product.price * quantity;
@@ -22,6 +24,10 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isClosed) {
+      alert("This seller is temporarily closed. Orders cannot be accepted at this time.");
+      return;
+    }
     if (!customerName || !customerPhone) {
       alert("Please enter customer name and phone number.");
       return;
@@ -76,7 +82,20 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
           <button onClick={onClose} className="close-btn"><X size={20} /></button>
         </div>
 
-        {seller.status === "LIMITED ORDERS" && (
+        {/* Temporary closure alert: strictly prevents order placement */}
+        {isClosed && (
+          <div className="callout callout-warning" style={{ backgroundColor: '#fef2f2', borderColor: '#fca5a5', color: '#991b1b' }}>
+            <AlertCircle size={20} color="var(--danger)" />
+            <div>
+              <strong>Store Temporarily Closed:</strong> {seller.unavailableNotice || "The seller is currently unavailable."}
+              <div style={{ fontSize: '0.775rem', marginTop: '0.25rem' }}>
+                Orders cannot be placed at this time. Please check back when the seller re-opens.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isLimited && !isClosed && (
           <div className="callout callout-warning">
             <AlertTriangle size={16} />
             <div style={{ fontSize: '0.8125rem' }}>
@@ -107,13 +126,14 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Quantity Selector (if fixed price) */}
+          {/* Quantity Selector */}
           {!isQuote && (
             <div className="input-group">
               <label className="input-label">Quantity ({product.unit})</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <button
                   type="button"
+                  disabled={isClosed}
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="btn btn-secondary"
                   style={{ width: '38px', height: '38px', padding: 0 }}
@@ -125,6 +145,7 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
                 </span>
                 <button
                   type="button"
+                  disabled={isClosed}
                   onClick={() => setQuantity(quantity + 1)}
                   className="btn btn-secondary"
                   style={{ width: '38px', height: '38px', padding: 0 }}
@@ -145,6 +166,7 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
               <input
                 type="text"
                 required
+                disabled={isClosed}
                 value={customerName}
                 onChange={e => setCustomerName(e.target.value)}
                 className="input-control"
@@ -157,6 +179,7 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
               <input
                 type="tel"
                 required
+                disabled={isClosed}
                 value={customerPhone}
                 onChange={e => setCustomerPhone(e.target.value)}
                 className="input-control"
@@ -180,13 +203,14 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
                   borderColor: orderType === 'DELIVERY' ? 'var(--text-main)' : 'var(--border-color)',
                   backgroundColor: orderType === 'DELIVERY' ? 'var(--bg-secondary)' : '#ffffff',
                   borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
+                  cursor: isClosed ? 'not-allowed' : 'pointer',
                   fontSize: '0.8125rem',
                   fontWeight: 600
                 }}>
                   <input
                     type="radio"
                     name="orderType"
+                    disabled={isClosed}
                     checked={orderType === 'DELIVERY'}
                     onChange={() => setOrderType('DELIVERY')}
                   />
@@ -205,13 +229,14 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
                   borderColor: orderType === 'PICKUP' ? 'var(--text-main)' : 'var(--border-color)',
                   backgroundColor: orderType === 'PICKUP' ? 'var(--bg-secondary)' : '#ffffff',
                   borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
+                  cursor: isClosed ? 'not-allowed' : 'pointer',
                   fontSize: '0.8125rem',
                   fontWeight: 600
                 }}>
                   <input
                     type="radio"
                     name="orderType"
+                    disabled={isClosed}
                     checked={orderType === 'PICKUP'}
                     onChange={() => setOrderType('PICKUP')}
                   />
@@ -228,6 +253,7 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
               <input
                 type="text"
                 required
+                disabled={isClosed}
                 value={customerAddress}
                 onChange={e => setCustomerAddress(e.target.value)}
                 className="input-control"
@@ -243,6 +269,7 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
             </label>
             <textarea
               rows={2}
+              disabled={isClosed}
               value={notes}
               onChange={e => setNotes(e.target.value)}
               className="textarea-control"
@@ -272,27 +299,20 @@ export default function OrderModal({ product, seller, onClose, onOrderSuccess })
             </div>
           )}
 
-          <div style={{
-            fontSize: '0.75rem',
-            color: 'var(--text-muted)',
-            marginBottom: '1.25rem',
-            backgroundColor: 'var(--bg-subtle)',
-            padding: '0.5rem 0.75rem',
-            borderRadius: '4px'
-          }}>
-            ℹ️ <strong>Workflow:</strong> Request is sent directly to the woman entrepreneur for approval. You will be prompted for UPI payment once accepted.
-          </div>
-
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
             <button type="button" onClick={onClose} className="btn btn-secondary">
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isClosed}
               className={`btn ${isQuote ? 'btn-accent' : 'btn-primary'}`}
+              style={{
+                opacity: isClosed ? 0.5 : 1,
+                cursor: isClosed ? 'not-allowed' : 'pointer'
+              }}
             >
-              {isQuote ? "Send Quote Request" : "Submit Order Request"}
+              {isClosed ? "Store Temporarily Closed" : isQuote ? "Send Quote Request" : "Submit Order Request"}
             </button>
           </div>
         </form>

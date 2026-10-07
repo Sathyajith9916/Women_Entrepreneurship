@@ -8,24 +8,24 @@ export default function DemoWalkthroughBar({ onTriggerDemoAction }) {
   const [activeStep, setActiveStep] = useState(1);
 
   const steps = [
-    { num: 1, text: "Open Sakhi Market", role: "CUSTOMER" },
-    { num: 2, text: "Search 'Holige'", role: "CUSTOMER", action: "SEARCH_HOLIGE" },
-    { num: 3, text: "Find Vidyanagar business (Lakshmi Home Foods)", role: "CUSTOMER" },
-    { num: 4, text: "Open catalogue", role: "CUSTOMER", action: "OPEN_CATALOGUE" },
-    { num: 5, text: "Place order request", role: "CUSTOMER", action: "PLACE_ORDER" },
-    { num: 6, text: "Seller receives request", role: "SELLER" },
-    { num: 7, text: "Seller accepts order", role: "SELLER" },
-    { num: 8, text: "Customer UPI payment", role: "CUSTOMER", action: "PAY_UPI" },
-    { num: 9, text: "Delivery partner sees request", role: "DELIVERY" },
-    { num: 10, text: "Delivery partner accepts", role: "DELIVERY" },
-    { num: 11, text: "Move through delivery states", role: "DELIVERY" },
-    { num: 12, text: "Order marked DELIVERED", role: "DELIVERY" },
-    { num: 13, text: "Seller dashboard earnings update", role: "SELLER" },
-    { num: 14, text: "Seller temporarily closes business", role: "SELLER" },
-    { num: 15, text: "Customer sees unavailable notice", role: "CUSTOMER" },
-    { num: 16, text: "Seller creates Deepavali offer", role: "SELLER" },
-    { num: 17, text: "Generate shareable poster", role: "SELLER" },
-    { num: 18, text: "Share product on WhatsApp", role: "CUSTOMER" }
+    { num: 1, text: "Open Sakhi Market", role: "CUSTOMER", action: "STEP_1" },
+    { num: 2, text: "Customer searches 'Holige'", role: "CUSTOMER", action: "STEP_2" },
+    { num: 3, text: "Finds Vidyanagar business (Lakshmi Home Foods)", role: "CUSTOMER", action: "STEP_3" },
+    { num: 4, text: "Opens store catalogue", role: "CUSTOMER", action: "STEP_4" },
+    { num: 5, text: "Customer places order request", role: "CUSTOMER", action: "STEP_5" },
+    { num: 6, text: "Seller receives request in Hub", role: "SELLER", action: "STEP_6" },
+    { num: 7, text: "Seller accepts the order", role: "SELLER", action: "STEP_7" },
+    { num: 8, text: "Customer sees UPI/QR payment option", role: "CUSTOMER", action: "STEP_8" },
+    { num: 9, text: "Delivery partner sees delivery request", role: "DELIVERY", action: "STEP_9" },
+    { num: 10, text: "Delivery partner accepts delivery", role: "DELIVERY", action: "STEP_10" },
+    { num: 11, text: "Order advances through delivery states", role: "DELIVERY", action: "STEP_11" },
+    { num: 12, text: "Order becomes DELIVERED", role: "DELIVERY", action: "STEP_12" },
+    { num: 13, text: "Seller dashboard updates monthly sales", role: "SELLER", action: "STEP_13" },
+    { num: 14, text: "Seller temporarily closes business", role: "SELLER", action: "STEP_14" },
+    { num: 15, text: "Customer sees unavailable notice", role: "CUSTOMER", action: "STEP_15" },
+    { num: 16, text: "Seller creates Deepavali offer", role: "SELLER", action: "STEP_16" },
+    { num: 17, text: "Marketplace generates shareable poster", role: "SELLER", action: "STEP_17" },
+    { num: 18, text: "Seller shares product through WhatsApp", role: "CUSTOMER", action: "STEP_18" }
   ];
 
   const handleSelectStep = (s) => {
@@ -33,8 +33,8 @@ export default function DemoWalkthroughBar({ onTriggerDemoAction }) {
     if (s.role !== currentRole) {
       setCurrentRole(s.role);
     }
-    if (s.action && onTriggerDemoAction) {
-      onTriggerDemoAction(s.action);
+    if (onTriggerDemoAction) {
+      onTriggerDemoAction(s.action, s.num);
     }
   };
 
@@ -64,7 +64,7 @@ export default function DemoWalkthroughBar({ onTriggerDemoAction }) {
             borderRadius: '3px',
             fontSize: '0.7rem'
           }}>
-            MVP DEMO
+            HACKATHON LIVE DEMO
           </span>
           <span style={{ fontWeight: 600 }}>
             Step {activeStep} of 18: <span style={{ color: '#93c5fd' }}>{steps[activeStep - 1].text}</span>
@@ -90,7 +90,7 @@ export default function DemoWalkthroughBar({ onTriggerDemoAction }) {
             style={{ backgroundColor: '#1e293b', color: '#ffffff', borderColor: '#334155' }}
           >
             {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            <span>All 18 Steps</span>
+            <span>View All 18 Steps</span>
           </button>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function DemoWalkthroughBar({ onTriggerDemoAction }) {
             maxWidth: 1200,
             margin: '0 auto',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             gap: '0.4rem'
           }}>
             {steps.map(s => (
