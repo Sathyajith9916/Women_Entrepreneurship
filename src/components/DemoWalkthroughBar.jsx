@@ -8,7 +8,7 @@ export default function DemoWalkthroughBar({ onTriggerDemoAction }) {
   const [activeStep, setActiveStep] = useState(1);
 
   const steps = [
-    { num: 1, text: "Open Sakhi Market", role: "CUSTOMER", action: "STEP_1" },
+    { num: 1, text: "Open Namma Siri", role: "CUSTOMER", action: "STEP_1" },
     { num: 2, text: "Customer searches 'Holige'", role: "CUSTOMER", action: "STEP_2" },
     { num: 3, text: "Finds Vidyanagar business (Lakshmi Home Foods)", role: "CUSTOMER", action: "STEP_3" },
     { num: 4, text: "Opens store catalogue", role: "CUSTOMER", action: "STEP_4" },
@@ -56,16 +56,6 @@ export default function DemoWalkthroughBar({ onTriggerDemoAction }) {
         gap: '0.5rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{
-            backgroundColor: 'var(--accent)',
-            color: '#ffffff',
-            fontWeight: 700,
-            padding: '1px 6px',
-            borderRadius: '3px',
-            fontSize: '0.7rem'
-          }}>
-            HACKATHON LIVE DEMO
-          </span>
           <span style={{ fontWeight: 600 }}>
             Step {activeStep} of 18: <span style={{ color: '#93c5fd' }}>{steps[activeStep - 1].text}</span>
           </span>

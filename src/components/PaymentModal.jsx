@@ -10,11 +10,11 @@ export default function PaymentModal({ order, onClose }) {
   if (!order) return null;
 
   const seller = sellers.find(s => s.id === order.sellerId);
-  const upiId = seller?.upiId || "sakhi.business@upi";
+  const upiId = seller?.upiId || "nammasiri.business@upi";
   const amount = order.totalAmount || 0;
 
   // Standard UPI deep link
-  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(seller?.ownerName || seller?.name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(`Sakhi Market Order ${order.id}`)}`;
+  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(seller?.ownerName || seller?.name)}&am=${amount}&cu=INR&tn=${encodeURIComponent(`Namma Siri Order ${order.id}`)}`;
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(upiId);
@@ -30,7 +30,7 @@ export default function PaymentModal({ order, onClose }) {
   const handleWhatsAppReceipt = () => {
     const text = encodeURIComponent(
       `Namaskara *${seller?.name || 'Seller'}*,\n\n` +
-      `I have placed Order *#${order.id}* on Sakhi Market.\n` +
+      `I have placed Order *#${order.id}* on Namma Siri.\n` +
       `Items: ${order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}\n` +
       `Total Amount: *₹${amount}*\n` +
       `Payment Status: *COMPLETED via UPI* to ${upiId}\n` +

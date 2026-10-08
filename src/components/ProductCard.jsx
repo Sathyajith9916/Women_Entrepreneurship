@@ -11,11 +11,11 @@ export default function ProductCard({ product, seller, onOrderClick, onSellerCli
   const handleWhatsAppShare = (e) => {
     e.stopPropagation();
     const shareText = encodeURIComponent(
-      `Check out ${seller.name} on Sakhi Market!\n\n` +
+      `Check out ${seller.name} on Namma Siri!\n\n` +
       `*${product.name}*\n` +
       `Price: ₹${product.price} (${product.unit})\n` +
       `Location: ${seller.location}, Hubballi-Dharwad\n\n` +
-      `Order or request quote: https://sakhi-market.hubballi/s/${seller.id}`
+      `Order or request quote: https://nammasiri.hubballi/s/${seller.id}`
     );
     window.open(`https://api.whatsapp.com/send?text=${shareText}`, '_blank');
   };

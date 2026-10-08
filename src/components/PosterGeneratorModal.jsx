@@ -37,86 +37,143 @@ export default function PosterGeneratorModal({ seller, product, offer, onClose }
 
     // Festival Header Banner
     ctx.fillStyle = '#b45309';
-    ctx.fillRect(25, 25, width - 50, 80);
+    ctx.fillRect(25, 25, width - 50, 75);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 22px sans-serif';
+    ctx.font = 'bold 20px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`✨ ${festivalName.toUpperCase()} CELEBRATION ✨`, width / 2, 75);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`✨ ${festivalName.toUpperCase()} SPECIAL ✨`, width / 2, 62);
 
-    // Sakhi Market Sub-tag
+    // Namma Siri Sub-tag
+    ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = '#64748b';
-    ctx.font = '600 14px sans-serif';
-    ctx.fillText('SAKHI MARKET • HUBBALLI-DHARWAD WOMEN ENTERPRISE', width / 2, 140);
+    ctx.font = '700 13px sans-serif';
+    ctx.fillText('NAMMA SIRI • HUBBALLI-DHARWAD WOMEN ENTERPRISE', width / 2, 130);
 
     // Seller Name
     ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 32px sans-serif';
-    ctx.fillText(sellerName, width / 2, 195);
+    ctx.font = 'bold 30px sans-serif';
+    ctx.fillText(sellerName, width / 2, 175);
 
     // Location badge
     ctx.fillStyle = '#475569';
-    ctx.font = '500 16px sans-serif';
-    ctx.fillText(`📍 ${location}, Hubballi-Dharwad`, width / 2, 230);
+    ctx.font = '500 15px sans-serif';
+    ctx.fillText(`📍 ${location}, Hubballi-Dharwad`, width / 2, 210);
 
     // Divider
-    ctx.strokeStyle = '#cbd5e1';
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(80, 260);
-    ctx.lineTo(width - 80, 260);
+    ctx.moveTo(90, 235);
+    ctx.lineTo(width - 90, 235);
     ctx.stroke();
 
-    // Featured Product Box
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(60, 290, width - 120, 220);
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.strokeRect(60, 290, width - 120, 220);
+    // Helper to wrap text and return array of lines
+    const getLines = (context, text, maxWidth) => {
+      const words = String(text || '').split(' ');
+      const lines = [];
+      let currentLine = '';
 
+      for (let n = 0; n < words.length; n++) {
+        const testLine = currentLine ? `${currentLine} ${words[n]}` : words[n];
+        const metrics = context.measureText(testLine);
+        if (metrics.width > maxWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = words[n];
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      return lines;
+    };
+
+    // Featured Product Box
+    const boxX = 50;
+    const boxY = 260;
+    const boxWidth = width - 100; // 500px wide
+    const boxHeight = 265;
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+    // Title rendering (Auto-wrapped, 22px bold)
     ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 24px sans-serif';
-    // Wrap product title if long
-    const words = title.split(' ');
-    let line1 = words.slice(0, 4).join(' ');
-    let line2 = words.slice(4).join(' ');
-    ctx.fillText(line1, width / 2, 350);
-    if (line2) {
-      ctx.fillText(line2, width / 2, 385);
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textAlign = 'center';
+    const titleLines = getLines(ctx, title, boxWidth - 40);
+    let curY = boxY + 45;
+    titleLines.forEach((line) => {
+      ctx.fillText(line, width / 2, curY);
+      curY += 28;
+    });
+
+    // Separator inside card
+    curY += 6;
+    ctx.strokeStyle = '#fed7aa';
+    ctx.beginPath();
+    ctx.moveTo(width / 2 - 60, curY);
+    ctx.lineTo(width / 2 + 60, curY);
+    ctx.stroke();
+    curY += 26;
+
+    // Price callout - dynamically choose font size so it fits inside boxWidth - 40
+    let priceFontSize = 26;
+    ctx.font = `bold ${priceFontSize}px sans-serif`;
+    let priceLines = getLines(ctx, priceText, boxWidth - 50);
+    // If it spans more than 2 lines, shrink font
+    if (priceLines.length > 2) {
+      priceFontSize = 20;
+      ctx.font = `bold ${priceFontSize}px sans-serif`;
+      priceLines = getLines(ctx, priceText, boxWidth - 50);
     }
 
-    // Price callout
     ctx.fillStyle = '#b45309';
-    ctx.font = 'bold 30px sans-serif';
-    ctx.fillText(priceText, width / 2, 450);
+    priceLines.forEach((line) => {
+      ctx.fillText(line, width / 2, curY);
+      curY += priceFontSize + 6;
+    });
 
+    // Tagline badge inside card
     ctx.fillStyle = '#16a34a';
-    ctx.font = '600 15px sans-serif';
-    ctx.fillText('100% Home Crafted • Traditional Quality', width / 2, 485);
+    ctx.font = '600 14px sans-serif';
+    ctx.fillText('✓ 100% Home Crafted • Traditional Quality', width / 2, Math.max(curY + 12, boxY + boxHeight - 24));
 
-    // Booking Details
+    // Booking Details section
+    const bookingY = 560;
     ctx.fillStyle = '#0f172a';
     ctx.font = 'bold 18px sans-serif';
-    ctx.fillText('Order Now / Pre-book on Sakhi Market', width / 2, 560);
+    ctx.fillText('Order Now / Pre-book on Namma Siri', width / 2, bookingY);
 
     ctx.fillStyle = '#475569';
     ctx.font = '500 16px sans-serif';
-    ctx.fillText(`WhatsApp / Call: ${phone}`, width / 2, 600);
+    ctx.fillText(`WhatsApp / Call: ${phone}`, width / 2, bookingY + 34);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '500 13px sans-serif';
+    ctx.fillText('Direct UPI • Local Hubballi-Dharwad Delivery', width / 2, bookingY + 62);
 
     // Footer
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(25, 655, width - 50, 70);
+    ctx.fillRect(25, 660, width - 50, 65);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '600 13px sans-serif';
-    ctx.fillText('Empowering Local Women-Led Home Businesses', width / 2, 685);
+    ctx.font = '700 13px sans-serif';
+    ctx.fillText('NAMMA SIRI • LOCAL WOMEN ENTREPRENEURS PLATFORM', width / 2, 688);
     ctx.font = '400 12px sans-serif';
-    ctx.fillText('Direct Order • UPI Payments • Doorstep Delivery', width / 2, 705);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillText('Direct Order • Fair Local Pricing • Empowering Home Businesses', width / 2, 708);
   }, [seller, product, offer]);
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = `sakhi-poster-${sellerName.toLowerCase().replace(/\s+/g, '-')}.png`;
+    link.download = `namma-siri-poster-${sellerName.toLowerCase().replace(/\s+/g, '-')}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
@@ -127,8 +184,8 @@ export default function PosterGeneratorModal({ seller, product, offer, onClose }
       `*${title}*\n` +
       `Special Price: ${priceText}\n` +
       `Location: ${location}, Hubballi-Dharwad\n\n` +
-      `Order directly via Sakhi Market:\n` +
-      `https://sakhi-market.hubballi/s/${seller?.id || '1'}`
+      `Order directly via Namma Siri:\n` +
+      `https://nammasiri.hubballi/s/${seller?.id || '1'}`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };

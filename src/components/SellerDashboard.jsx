@@ -30,6 +30,11 @@ import {
 import { CATEGORIES, LOCATIONS, FESTIVAL_OPTIONS } from '../data/seedData';
 import AiCatalogueModal from './AiCatalogueModal';
 import PosterGeneratorModal from './PosterGeneratorModal';
+import ExpensesSection from './ExpensesSection';
+import MarketingAdsSection from './MarketingAdsSection';
+import CommunitySection from './CommunitySection';
+import PaymentLayerSection from './PaymentLayerSection';
+import LoanSupportTrustScore from './LoanSupportTrustScore';
 
 export default function SellerDashboard() {
   const {
@@ -320,11 +325,13 @@ export default function SellerDashboard() {
         overflowX: 'auto'
       }}>
         {[
-          { id: 'orders', label: `Order Requests (${pendingRequests.length + acceptedOrders.length})` },
-          { id: 'catalogue', label: `My Catalogue (${sellerProducts.length})` },
-          { id: 'festivals', label: `Festival Campaigns (${activeSeller.festivalOffers?.length || 0})` },
-          { id: 'history', label: 'Business Ledger & Credit Readiness' },
-          { id: 'profile', label: 'Business Profile & Status' }
+          { id: 'orders', label: `📥 Orders (${pendingRequests.length + acceptedOrders.length})` },
+          { id: 'catalogue', label: `📦 Catalogue (${sellerProducts.length})` },
+          { id: 'payments', label: '💳 Payment Layer & Monthly Tracker' },
+          { id: 'expenses', label: '📊 Expenses & Net Profit' },
+          { id: 'loans', label: '🏛️ Loan Support & Trust Score' },
+          { id: 'marketing', label: '🌸 Marketing & Posters' },
+          { id: 'business', label: '⚙️ Business Profile' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -724,8 +731,8 @@ export default function SellerDashboard() {
         </div>
       )}
 
-      {/* TAB 3: FESTIVAL MODE CAMPAIGNS */}
-      {activeTab === 'festivals' && (
+      {/* TAB: MARKETING & FESTIVAL CAMPAIGNS */}
+      {(activeTab === 'marketing' || activeTab === 'festivals') && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div>
@@ -854,7 +861,7 @@ export default function SellerDashboard() {
                         `🎉 *${offer.festivalName} Offer by ${activeSeller.name}* 🎉\n` +
                         `*${offer.title}*\n` +
                         `Deal: ${offer.discountDesc}\n` +
-                        `Order now on Sakhi Market: https://sakhi-market.hubballi/s/${activeSeller.id}`
+                        `Order now on Namma Siri: https://nammasiri.hubballi/s/${activeSeller.id}`
                       );
                       window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
                     }}
@@ -867,11 +874,16 @@ export default function SellerDashboard() {
               </div>
             ))}
           </div>
+
+          {/* Local Marketing & Meta Ads Center */}
+          <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '2px dashed var(--border-color)' }}>
+            <MarketingAdsSection />
+          </div>
         </div>
       )}
 
-      {/* TAB 4: TRANSACTION HISTORY & FINANCIAL READINESS */}
-      {activeTab === 'history' && (
+      {/* TAB: EARNINGS & BUSINESS TRANSACTION HISTORY */}
+      {(activeTab === 'earnings' || activeTab === 'history') && (
         <div>
           <div style={{
             backgroundColor: 'var(--bg-secondary)',
@@ -964,8 +976,8 @@ export default function SellerDashboard() {
         </div>
       )}
 
-      {/* TAB 5: BUSINESS PROFILE & STATUS (FEATURE 2 COMPLETE) */}
-      {activeTab === 'profile' && (
+      {/* TAB: BUSINESS PROFILE & STATUS */}
+      {(activeTab === 'business' || activeTab === 'profile') && (
         <div style={{ maxWidth: '780px' }}>
           <div className="card">
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.35rem' }}>
@@ -1171,6 +1183,46 @@ export default function SellerDashboard() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* TAB: PAYMENT LAYER & LEDGER */}
+      {activeTab === 'payments' && (
+        <div>
+          <PaymentLayerSection />
+        </div>
+      )}
+
+      {/* TAB: LOAN SUPPORT & TRUST SCORE */}
+      {activeTab === 'loans' && (
+        <div>
+          <LoanSupportTrustScore />
+        </div>
+      )}
+
+      {/* TAB: EXPENSES & NET PROFIT */}
+      {activeTab === 'expenses' && (
+        <div style={{ maxWidth: '860px' }}>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Micro-Enterprise Expense & Profit Ledger</h2>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              Track direct production costs (ingredients, raw silk, packaging, delivery fuel) to see your real monthly take-home profit.
+            </p>
+          </div>
+          <ExpensesSection />
+        </div>
+      )}
+
+      {/* TAB: COMMUNITY & SISTERHOOD */}
+      {activeTab === 'community' && (
+        <div>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Women Entrepreneurs Sisterhood Network</h2>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              Connect with fellow micro-entrepreneurs across Hubballi-Dharwad, attend local business workshops, and share peer advice.
+            </p>
+          </div>
+          <CommunitySection />
         </div>
       )}
 

@@ -24,7 +24,7 @@ export default function FutureVisionModal({ onClose }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
               <Sparkles size={18} color="var(--accent)" />
-              <h3 className="modal-title">Sakhi Market: Long-Term Vision & Roadmap</h3>
+              <h3 className="modal-title">Namma Siri: Long-Term Vision & Roadmap</h3>
             </div>
             <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
               Marketplace &rarr; Community &rarr; Business Data &rarr; Trust &rarr; Financial Readiness &rarr; Growth
@@ -45,7 +45,7 @@ export default function FutureVisionModal({ onClose }) {
             Core Guiding Philosophy
           </h4>
           <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.45 }}>
-            "Today 12,000–15,000 women-led home businesses in Hubballi-Dharwad exist inside closed WhatsApp groups and personal contacts. Sakhi Market makes them discoverable, transactable and accountable without forcing them to become complicated formal e-commerce companies."
+            "Today 12,000–15,000 women-led home businesses in Hubballi-Dharwad exist inside closed WhatsApp groups and personal contacts. Namma Siri makes them discoverable, transactable and accountable without forcing them to become complicated formal e-commerce companies."
           </p>
         </div>
 

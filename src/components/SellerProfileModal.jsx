@@ -13,9 +13,9 @@ export default function SellerProfileModal({ seller, onClose, onOrderClick }) {
 
   const handleShareStore = () => {
     const text = encodeURIComponent(
-      `Check out ${seller.name} by ${seller.ownerName} on Sakhi Market!\n\n` +
+      `Check out ${seller.name} by ${seller.ownerName} on Namma Siri!\n\n` +
       `Specialty: ${seller.category} in ${seller.location}, Hubballi-Dharwad.\n` +
-      `Explore catalogue: https://sakhi-market.hubballi/s/${seller.id}`
+      `Explore catalogue: https://nammasiri.hubballi/s/${seller.id}`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };

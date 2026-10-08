@@ -11,7 +11,7 @@ export async function generateCatalogueListing(promptText, apiKey = null) {
         body: JSON.stringify({
           contents: [{
             parts: [{
-              text: `You are an assistant for a local women's marketplace in Hubballi-Dharwad called Sakhi Market. Based on this seller prompt: "${promptText}", return a valid JSON object strictly formatted as:
+              text: `You are an assistant for a local women's marketplace in Hubballi-Dharwad called Namma Siri. Based on this seller prompt: "${promptText}", return a valid JSON object strictly formatted as:
               {"title": "Product Title", "description": "Crisp 2-sentence description highlighting handmade quality", "category": "One of: Food, Baking, Catering, Tailoring, Kasuti / Embroidery, Handicrafts, Jewellery, Fashion, Festive Products, Other Services", "suggestedPrice": 250, "unit": "e.g. Pack of 10 or 500g or 1 Piece", "isQuoteBased": false}`
             }]
           }]

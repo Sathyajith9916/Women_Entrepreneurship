@@ -41,6 +41,11 @@ export function AppProvider({ children }) {
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [toasts, setToasts] = useState([]);
 
+  // Auth state
+  const [currentUser, setCurrentUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ns_current_user') || 'null'); } catch { return null; }
+  });
+
   // Persist state changes
   useEffect(() => {
     localStorage.setItem('sakhi_sellers', JSON.stringify(sellers));
@@ -68,6 +73,30 @@ export function AppProvider({ children }) {
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 4000);
+  };
+
+  // Auth operations
+  const loginUser = (user, newSeller) => {
+    setCurrentUser(user);
+    localStorage.setItem('ns_current_user', JSON.stringify(user));
+    if (newSeller) {
+      setSellers(prev => {
+        const exists = prev.find(s => s.id === newSeller.id);
+        return exists ? prev : [newSeller, ...prev];
+      });
+    }
+    const sellerId = newSeller?.id || user.sellerId;
+    if (sellerId) setActiveSellerId(sellerId);
+    setCurrentRole('SELLER');
+    showToast(`Welcome, ${user.fullName}! Your seller hub is ready.`, 'success');
+  };
+
+  const logoutUser = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('ns_current_user');
+    setCurrentRole('CUSTOMER');
+    setActiveSellerId('seller-1');
+    showToast('Logged out successfully.', 'info');
   };
 
   // Seller Operations
@@ -266,6 +295,9 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
+      currentUser,
+      loginUser,
+      logoutUser,
       sellers,
       products,
       orders,

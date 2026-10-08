@@ -4,7 +4,7 @@ import { Search, MapPin, Filter, Store, Sparkles, Tag, ArrowRight, Phone, Clock,
 import ProductCard from './ProductCard';
 import { CATEGORIES, LOCATIONS } from '../data/seedData';
 
-export default function CustomerDiscovery({ onSelectProduct, onSelectSeller, externalSearchQuery = '' }) {
+export default function CustomerDiscovery({ onSelectProduct, onSelectSeller, externalSearchQuery = '', onOpenAuth }) {
   const { sellers, products, t } = useApp();
   const [searchQuery, setSearchQuery] = useState(externalSearchQuery);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -111,6 +111,30 @@ export default function CustomerDiscovery({ onSelectProduct, onSelectSeller, ext
         }}>
           Authentic North Karnataka foods, heritage Kasuti embroidery, boutique tailoring, and custom bakes directly from home makers. Support micro-entrepreneurs with transparent pricing, UPI, and local delivery.
         </p>
+
+        {/* Humane invitation to register */}
+        <div style={{
+          marginTop: '0.5rem',
+          paddingTop: '0.75rem',
+          borderTop: '1px solid var(--border-color)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
+        }}>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)' }}>
+            👩‍🍳 <strong>Are you a woman running a home kitchen, tailoring unit, or handicraft craft in Hubballi-Dharwad?</strong>
+            <span style={{ color: 'var(--text-muted)', marginLeft: '0.35rem' }}>No GST or complicated paperwork needed.</span>
+          </div>
+          <button
+            onClick={() => onOpenAuth && onOpenAuth('register')}
+            className="btn btn-primary btn-sm"
+            style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem' }}
+          >
+            Register Your Business (Free) &rarr;
+          </button>
+        </div>
       </div>
 
       {/* Active Festival Campaigns Banner */}

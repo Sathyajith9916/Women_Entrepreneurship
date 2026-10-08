@@ -9,8 +9,12 @@ import OrderModal from './components/OrderModal';
 import PaymentModal from './components/PaymentModal';
 import FutureVisionModal from './components/FutureVisionModal';
 import PosterGeneratorModal from './components/PosterGeneratorModal';
-import DemoWalkthroughBar from './components/DemoWalkthroughBar';
-import { ShoppingBag, CreditCard, Clock, CheckCircle2, ChevronRight, X } from 'lucide-react';
+import AboutUsModal from './components/AboutUsModal';
+import AuthModal from './components/AuthModal';
+import CommunitySection from './components/CommunitySection';
+import CompartmentSwitcher from './components/CompartmentSwitcher';
+import CustomerSupportModal from './components/CustomerSupportModal';
+import { ShoppingBag, CreditCard, Clock, CheckCircle2, ChevronRight, X, HelpCircle, HeartHandshake } from 'lucide-react';
 
 export default function App() {
   const {
@@ -27,7 +31,10 @@ export default function App() {
     activePartner,
     createFestivalOffer,
     toasts,
-    showToast
+    showToast,
+    currentUser,
+    loginUser,
+    logoutUser
   } = useApp();
 
   // Modals state
@@ -35,6 +42,10 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState(null);
   const [showRoadmap, setShowRoadmap] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
   const [showCustomerOrders, setShowCustomerOrders] = useState(false);
   const [showPosterModal, setShowPosterModal] = useState(false);
   const [posterContext, setPosterContext] = useState(null);
@@ -65,7 +76,7 @@ export default function App() {
         setSelectedSeller(null);
         setSelectedProduct(null);
         setSelectedOrderForPayment(null);
-        showToast("Step 1: Open Sakhi Market homepage", "info");
+        showToast("Step 1: Open Namma Siri homepage", "info");
         break;
 
       case 'STEP_2':
@@ -225,11 +236,11 @@ export default function App() {
         setCurrentRole('CUSTOMER');
         setShowPosterModal(false);
         const text = encodeURIComponent(
-          `Check out Lakshmi Home Foods on Sakhi Market!\n\n` +
+          `Check out Lakshmi Home Foods on Namma Siri!\n\n` +
           `*Dharwad Bele Holige (Puran Poli)*\n` +
           `Price: ₹250 (Pack of 10)\n` +
           `Location: Vidyanagar, Hubballi-Dharwad\n\n` +
-          `View product: https://sakhi-market.hubballi/s/seller-1`
+          `View product: https://nammasiri.hubballi/s/seller-1`
         );
         window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
         showToast("Step 18: Shared product on WhatsApp!", "success");
@@ -243,11 +254,19 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* 18-Step Live Demo Scenario Navigation */}
-      <DemoWalkthroughBar onTriggerDemoAction={handleTriggerDemoAction} />
+      {/* Main Header with Navigation & Role Switcher */}
+      <Header
+        onOpenRoadmap={() => setShowRoadmap(true)}
+        onOpenAbout={() => setShowAbout(true)}
+        onOpenSupport={() => setShowSupportModal(true)}
+        onOpenAuth={(mode) => {
+          setAuthMode(mode || 'login');
+          setShowAuthModal(true);
+        }}
+      />
 
-      {/* Main Header with Role Switcher */}
-      <Header onOpenRoadmap={() => setShowRoadmap(true)} />
+      {/* DISTINCT COMPARTMENT NAVIGATOR (CUSTOMER SIDE vs BUSINESS OWNER vs SISTERHOOD vs DELIVERY) */}
+      <CompartmentSwitcher />
 
       {/* Customer Quick Order Status Drawer Button */}
       {currentRole === 'CUSTOMER' && (
@@ -333,11 +352,21 @@ export default function App() {
             onSelectProduct={handleSelectProduct}
             onSelectSeller={handleSelectSeller}
             externalSearchQuery={customerSearchQuery}
+            onOpenAuth={(mode) => {
+              setAuthMode(mode || 'register');
+              setShowAuthModal(true);
+            }}
           />
         )}
 
         {currentRole === 'SELLER' && (
           <SellerDashboard />
+        )}
+
+        {currentRole === 'COMMUNITY' && (
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '1.5rem 1rem' }}>
+            <CommunitySection />
+          </div>
         )}
 
         {currentRole === 'DELIVERY' && (
@@ -364,7 +393,7 @@ export default function App() {
           gap: '1rem'
         }}>
           <div>
-            <strong>Sakhi Market</strong> • Digital Commerce Infrastructure for Women-Led Local Businesses
+            <strong>Namma Siri</strong> • Digital Commerce Infrastructure for Women-Led Local Businesses
             <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', marginTop: '0.2rem' }}>
               Built for Hubballi-Dharwad • Connecting home food, Kasuti craft, tailoring, and celebration services
             </div>
@@ -415,6 +444,29 @@ export default function App() {
         />
       )}
 
+      {showAbout && (
+        <AboutUsModal
+          onClose={() => setShowAbout(false)}
+        />
+      )}
+
+      {showSupportModal && (
+        <CustomerSupportModal
+          onClose={() => setShowSupportModal(false)}
+        />
+      )}
+
+      {showAuthModal && (
+        <AuthModal
+          initialMode={authMode}
+          onClose={() => setShowAuthModal(false)}
+          onLogin={(user, newSeller) => {
+            loginUser(user, newSeller);
+            setShowAuthModal(false);
+          }}
+        />
+      )}
+
       {showPosterModal && posterContext && (
         <PosterGeneratorModal
           seller={posterContext.seller}
@@ -423,6 +475,34 @@ export default function App() {
           onClose={() => setShowPosterModal(false)}
         />
       )}
+
+      {/* Floating Sakhi Help Desk Button */}
+      <button
+        onClick={() => setShowSupportModal(true)}
+        style={{
+          position: 'fixed',
+          bottom: '1.25rem',
+          right: '1.25rem',
+          zIndex: 999,
+          backgroundColor: '#be185d',
+          color: '#ffffff',
+          border: 'none',
+          borderRadius: '2rem',
+          padding: '0.6rem 1.15rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          boxShadow: '0 4px 14px rgba(190, 24, 93, 0.45)',
+          cursor: 'pointer',
+          fontWeight: 700,
+          fontSize: '0.825rem',
+          transition: 'transform 0.15s ease'
+        }}
+        title="Need help? Chat with Sakhi Support"
+      >
+        <span style={{ fontSize: '1.1rem' }}>🌸</span>
+        <span>Sakhi Help Desk</span>
+      </button>
 
       {/* Floating Toast Notifications */}
       <div className="toast-container">
