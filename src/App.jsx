@@ -14,6 +14,7 @@ import AuthModal from './components/AuthModal';
 import CommunitySection from './components/CommunitySection';
 import CompartmentSwitcher from './components/CompartmentSwitcher';
 import CustomerSupportModal from './components/CustomerSupportModal';
+import VoiceRegistrationModal from './components/VoiceRegistrationModal';
 import { ShoppingBag, CreditCard, Clock, CheckCircle2, ChevronRight, X, HelpCircle, HeartHandshake } from 'lucide-react';
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState('login');
   const [showCustomerOrders, setShowCustomerOrders] = useState(false);
   const [showPosterModal, setShowPosterModal] = useState(false);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [posterContext, setPosterContext] = useState(null);
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
 
@@ -259,6 +261,7 @@ export default function App() {
         onOpenRoadmap={() => setShowRoadmap(true)}
         onOpenAbout={() => setShowAbout(true)}
         onOpenSupport={() => setShowSupportModal(true)}
+        onOpenVoiceModal={() => setShowVoiceModal(true)}
         onOpenAuth={(mode) => {
           setAuthMode(mode || 'login');
           setShowAuthModal(true);
@@ -352,6 +355,7 @@ export default function App() {
             onSelectProduct={handleSelectProduct}
             onSelectSeller={handleSelectSeller}
             externalSearchQuery={customerSearchQuery}
+            onOpenVoiceModal={() => setShowVoiceModal(true)}
             onOpenAuth={(mode) => {
               setAuthMode(mode || 'register');
               setShowAuthModal(true);
@@ -460,9 +464,23 @@ export default function App() {
         <AuthModal
           initialMode={authMode}
           onClose={() => setShowAuthModal(false)}
+          onOpenVoiceModal={() => {
+            setShowAuthModal(false);
+            setShowVoiceModal(true);
+          }}
           onLogin={(user, newSeller) => {
             loginUser(user, newSeller);
             setShowAuthModal(false);
+          }}
+        />
+      )}
+
+      {showVoiceModal && (
+        <VoiceRegistrationModal
+          onClose={() => setShowVoiceModal(false)}
+          onRegisterSuccess={(user, newSeller) => {
+            loginUser(user, newSeller);
+            setShowVoiceModal(false);
           }}
         />
       )}

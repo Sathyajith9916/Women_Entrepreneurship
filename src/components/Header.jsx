@@ -28,7 +28,7 @@ function NammaSiriLogo({ size = 32 }) {
   );
 }
 
-export default function Header({ onOpenRoadmap, onOpenAbout, onOpenAuth, onOpenSupport }) {
+export default function Header({ onOpenRoadmap, onOpenAbout, onOpenAuth, onOpenSupport, onOpenVoiceModal }) {
   const {
     currentRole,
     setCurrentRole,
@@ -145,6 +145,23 @@ export default function Header({ onOpenRoadmap, onOpenAbout, onOpenAuth, onOpenS
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <button
+                onClick={() => onOpenVoiceModal && onOpenVoiceModal()}
+                className="btn btn-sm"
+                style={{
+                  padding: '0.3rem 0.65rem',
+                  fontSize: '0.75rem',
+                  backgroundColor: '#be185d',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  borderRadius: 'var(--radius-sm)',
+                  border: 'none',
+                  boxShadow: '0 2px 6px rgba(190, 24, 93, 0.2)'
+                }}
+                title="Register business with voice"
+              >
+                <span>🎙️ Voice Register</span>
+              </button>
               <button
                 onClick={() => onOpenAuth && onOpenAuth('login')}
                 className="btn btn-secondary btn-sm"

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Phone, Mail, Lock, MapPin, Briefcase, ChevronRight, Store, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { X, User, Phone, Mail, Lock, MapPin, Briefcase, ChevronRight, Store, Eye, EyeOff, CheckCircle2, Mic } from 'lucide-react';
 
 const CATEGORIES = [
   'Food', 'Baking', 'Catering', 'Tailoring',
@@ -56,7 +56,7 @@ function InputField({ label, type = 'text', value, onChange, placeholder, requir
   );
 }
 
-export default function AuthModal({ onClose, onLogin, initialMode = 'login' }) {
+export default function AuthModal({ onClose, onLogin, initialMode = 'login', onOpenVoiceModal }) {
   const [mode, setMode] = useState(initialMode); // 'login' | 'register' | 'success'
   const [form, setForm] = useState({
     fullName: '', businessName: '', phone: '', email: '',
@@ -292,8 +292,70 @@ export default function AuthModal({ onClose, onLogin, initialMode = 'login' }) {
               </button>
             </form>
           ) : (
-            <form onSubmit={handleRegister}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 0.75rem' }}>
+            <div>
+              {/* Prominent Voice Registration Banner */}
+              <div style={{
+                background: 'linear-gradient(135deg, #fff1f2, #ffe4e6)',
+                border: '1.5px solid #fecdd3',
+                borderRadius: '0.75rem',
+                padding: '0.875rem 1rem',
+                marginBottom: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+                boxShadow: '0 4px 12px rgba(190, 24, 93, 0.08)'
+              }}>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '0.875rem', color: '#be185d', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Mic size={16} color="#be185d" />
+                    <span>Register with Voice</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#881337', marginTop: '0.15rem', fontWeight: 500 }}>
+                    Just tell us about your business in your own words
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (onOpenVoiceModal) onOpenVoiceModal();
+                  }}
+                  className="btn btn-primary"
+                  style={{
+                    backgroundColor: '#be185d',
+                    color: '#ffffff',
+                    fontSize: '0.8125rem',
+                    fontWeight: 800,
+                    padding: '0.5rem 0.85rem',
+                    borderRadius: '0.5rem',
+                    whiteSpace: 'nowrap',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 6px rgba(190, 24, 93, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <span>🎙️ Voice Register</span>
+                </button>
+              </div>
+
+              <div style={{
+                textAlign: 'center',
+                margin: '0.75rem 0',
+                fontSize: '0.75rem',
+                color: 'var(--text-muted)',
+                position: 'relative'
+              }}>
+                <span style={{ background: '#fff', padding: '0 0.5rem', position: 'relative', zIndex: 1 }}>OR fill details manually</span>
+                <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, borderTop: '1px dashed var(--border-color)' }}></div>
+              </div>
+
+              <form onSubmit={handleRegister}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 0.75rem' }}>
                 <InputField label="Your Full Name" value={form.fullName} onChange={v => set('fullName', v)} placeholder="Lakshmi Patil" required icon={User} />
                 <InputField label="Business Name" value={form.businessName} onChange={v => set('businessName', v)} placeholder="Lakshmi Home Foods" required icon={Store} />
               </div>
@@ -354,6 +416,7 @@ export default function AuthModal({ onClose, onLogin, initialMode = 'login' }) {
                 {loading ? 'Creating your business...' : 'Register & Start Selling →'}
               </button>
             </form>
+          </div>
           )}
         </div>
       </div>

@@ -4,7 +4,7 @@ import { Search, MapPin, Filter, Store, Sparkles, Tag, ArrowRight, Phone, Clock,
 import ProductCard from './ProductCard';
 import { CATEGORIES, LOCATIONS } from '../data/seedData';
 
-export default function CustomerDiscovery({ onSelectProduct, onSelectSeller, externalSearchQuery = '', onOpenAuth }) {
+export default function CustomerDiscovery({ onSelectProduct, onSelectSeller, externalSearchQuery = '', onOpenAuth, onOpenVoiceModal }) {
   const { sellers, products, t } = useApp();
   const [searchQuery, setSearchQuery] = useState(externalSearchQuery);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -127,13 +127,22 @@ export default function CustomerDiscovery({ onSelectProduct, onSelectSeller, ext
             👩‍🍳 <strong>Are you a woman running a home kitchen, tailoring unit, or handicraft craft in Hubballi-Dharwad?</strong>
             <span style={{ color: 'var(--text-muted)', marginLeft: '0.35rem' }}>No GST or complicated paperwork needed.</span>
           </div>
-          <button
-            onClick={() => onOpenAuth && onOpenAuth('register')}
-            className="btn btn-primary btn-sm"
-            style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem' }}
-          >
-            Register Your Business (Free) &rarr;
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => onOpenVoiceModal && onOpenVoiceModal()}
+              className="btn btn-primary btn-sm"
+              style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem', backgroundColor: '#be185d', color: '#ffffff', fontWeight: 800, border: 'none' }}
+            >
+              🎙️ Register with Voice
+            </button>
+            <button
+              onClick={() => onOpenAuth && onOpenAuth('register')}
+              className="btn btn-secondary btn-sm"
+              style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem' }}
+            >
+              Form Register &rarr;
+            </button>
+          </div>
         </div>
       </div>
 
