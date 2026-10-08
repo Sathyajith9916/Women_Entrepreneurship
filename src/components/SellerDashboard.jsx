@@ -35,6 +35,7 @@ import MarketingAdsSection from './MarketingAdsSection';
 import CommunitySection from './CommunitySection';
 import PaymentLayerSection from './PaymentLayerSection';
 import LoanSupportTrustScore from './LoanSupportTrustScore';
+import FestivalDemandIntelligence from './FestivalDemandIntelligence';
 
 export default function SellerDashboard() {
   const {
@@ -239,6 +240,57 @@ export default function SellerDashboard() {
         </div>
       </div>
 
+      {/* TOP FESTIVAL DEMAND APPROACHING ALERT */}
+      <div style={{
+        background: 'linear-gradient(135deg, #fff1f2, #ffe4e6)',
+        border: '1.5px solid #fecdd3',
+        borderRadius: 'var(--radius-md)',
+        padding: '0.875rem 1.25rem',
+        marginBottom: '1.25rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '0.75rem',
+        boxShadow: '0 4px 12px rgba(190, 24, 93, 0.06)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <span style={{ fontSize: '1.3rem' }}>🪔</span>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#881337' }}>
+              Festival demand is approaching
+            </div>
+            <div style={{ fontSize: '0.8125rem', color: '#be185d', fontWeight: 500 }}>
+              Dasara is 12 days away. Local demand for sarees is expected to increase significantly.
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            setActiveTab('forecast');
+            setTimeout(() => {
+              const el = document.getElementById('festival-demand-intelligence-card');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }}
+          className="btn btn-primary btn-sm"
+          style={{
+            backgroundColor: '#be185d',
+            color: '#ffffff',
+            fontWeight: 800,
+            fontSize: '0.8125rem',
+            padding: '0.45rem 0.85rem',
+            border: 'none',
+            borderRadius: '0.5rem',
+            cursor: 'pointer',
+            boxShadow: '0 2px 6px rgba(190, 24, 93, 0.2)'
+          }}
+        >
+          View Forecast &rarr;
+        </button>
+      </div>
+
       {/* FEATURE 14: SELLER AVAILABILITY WARNING BANNER */}
       {activeSeller.status === 'TEMPORARILY CLOSED' && (
         <div className="callout callout-warning" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -326,6 +378,7 @@ export default function SellerDashboard() {
       }}>
         {[
           { id: 'orders', label: `📥 Orders (${pendingRequests.length + acceptedOrders.length})` },
+          { id: 'forecast', label: '🪔 Festival Demand Intelligence' },
           { id: 'catalogue', label: `📦 Catalogue (${sellerProducts.length})` },
           { id: 'payments', label: '💳 Payment Layer & Monthly Tracker' },
           { id: 'expenses', label: '📊 Expenses & Net Profit' },
@@ -353,6 +406,11 @@ export default function SellerDashboard() {
           </button>
         ))}
       </div>
+
+      {/* TAB: FESTIVAL DEMAND INTELLIGENCE */}
+      {activeTab === 'forecast' && (
+        <FestivalDemandIntelligence />
+      )}
 
       {/* TAB 1: ORDER REQUESTS & APPROVAL WORKFLOW */}
       {activeTab === 'orders' && (

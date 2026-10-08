@@ -3,10 +3,13 @@ import { Share2, ShoppingBag, MessageSquare, Check, AlertCircle } from 'lucide-r
 import { useApp } from '../context/AppContext';
 
 export default function ProductCard({ product, seller, onOrderClick, onSellerClick }) {
-  const { t } = useApp();
+  const { t, festivalDemandState, showToast } = useApp();
+  const [showPreOrderModal, setShowPreOrderModal] = React.useState(false);
 
   const isSellerClosed = seller?.status === "TEMPORARILY CLOSED";
   const isAvailable = product.availability && !isSellerClosed;
+  const isSareeOrFashion = product.category?.toLowerCase().includes('fashion') || product.name?.toLowerCase().includes('saree') || product.category?.toLowerCase().includes('embroidery') || product.category?.toLowerCase().includes('kasuti');
+  const isPreOrderActive = festivalDemandState?.campaignLaunched || isSareeOrFashion;
 
   const handleWhatsAppShare = (e) => {
     e.stopPropagation();
@@ -45,6 +48,42 @@ export default function ProductCard({ product, seller, onOrderClick, onSellerCli
             )}
           </div>
         </div>
+
+        {/* Festival Pre-order Banner Badge */}
+        {isPreOrderActive && (
+          <div style={{
+            backgroundColor: '#fff1f2',
+            border: '1px solid #fecdd3',
+            borderRadius: '0.4rem',
+            padding: '0.35rem 0.6rem',
+            marginBottom: '0.6rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '0.75rem'
+          }}>
+            <span style={{ color: '#be185d', fontWeight: 700 }}>
+              🪔 Dasara Pre-order available
+            </span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowPreOrderModal(true);
+              }}
+              className="btn btn-primary btn-sm"
+              style={{
+                fontSize: '0.7rem',
+                padding: '0.15rem 0.5rem',
+                backgroundColor: '#be185d',
+                color: '#ffffff',
+                border: 'none',
+                fontWeight: 800
+              }}
+            >
+              Pre-order
+            </button>
+          </div>
+        )}
 
         {/* Product Title */}
         <h3 style={{
@@ -150,6 +189,55 @@ export default function ProductCard({ product, seller, onOrderClick, onSellerCli
           </button>
         </div>
       </div>
+
+      {/* Pre-order Recorded Modal */}
+      {showPreOrderModal && (
+        <div className="modal-overlay" onClick={() => setShowPreOrderModal(false)} style={{ zIndex: 1100 }}>
+          <div
+            className="modal-content"
+            style={{ maxWidth: 380, textAlign: 'center', padding: '2rem 1.5rem', borderRadius: '1rem' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{
+              width: 60,
+              height: 60,
+              borderRadius: '50%',
+              backgroundColor: '#fff1f2',
+              color: '#be185d',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1rem',
+              fontSize: '1.8rem',
+              border: '2px solid #fecdd3'
+            }}>
+              🪔
+            </div>
+
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#881337', marginBottom: '0.4rem' }}>
+              Pre-order Request Recorded!
+            </h3>
+
+            <p style={{ fontSize: '0.85rem', color: '#be185d', marginBottom: '1.25rem', fontWeight: 500 }}>
+              Your pre-order request for <strong>{product.name}</strong> by <strong>{seller?.name}</strong> has been recorded for Dasara festival delivery.
+            </p>
+
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '0.5rem', padding: '0.75rem', marginBottom: '1.25rem', fontSize: '0.78rem', color: '#475569', textAlign: 'left' }}>
+              <div>📍 Delivery Location: {seller?.location}, Hubballi-Dharwad</div>
+              <div>🏷️ Price: ₹{product.price} ({product.unit})</div>
+              <div>✨ No advance payment required for pre-orders.</div>
+            </div>
+
+            <button
+              onClick={() => setShowPreOrderModal(false)}
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center', backgroundColor: '#be185d', padding: '0.6rem', fontWeight: 800 }}
+            >
+              Great, Thank You!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

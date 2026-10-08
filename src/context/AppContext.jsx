@@ -67,6 +67,46 @@ export function AppProvider({ children }) {
     localStorage.setItem('sakhi_role', currentRole);
   }, [currentRole]);
 
+  // Festival Demand Intelligence State
+  const [festivalDemandState, setFestivalDemandState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sakhi_festival_demand');
+      return saved ? JSON.parse(saved) : {
+        festivalName: 'DASARA 2026',
+        daysRemaining: 12,
+        demandForecastPct: 82,
+        expectedOrders: 120,
+        inventoryCapacity: 75,
+        recommendedInventory: 45,
+        potentialShortfall: 45,
+        preOrdersCount: 0,
+        campaignLaunched: false,
+        inventoryPrepared: false
+      };
+    } catch {
+      return {
+        festivalName: 'DASARA 2026',
+        daysRemaining: 12,
+        demandForecastPct: 82,
+        expectedOrders: 120,
+        inventoryCapacity: 75,
+        recommendedInventory: 45,
+        potentialShortfall: 45,
+        preOrdersCount: 0,
+        campaignLaunched: false,
+        inventoryPrepared: false
+      };
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sakhi_festival_demand', JSON.stringify(festivalDemandState));
+  }, [festivalDemandState]);
+
+  const updateFestivalDemandState = (updates) => {
+    setFestivalDemandState(prev => ({ ...prev, ...updates }));
+  };
+
   const showToast = (message, type = 'info') => {
     const id = Date.now() + Math.random();
     setToasts(prev => [...prev, { id, message, type }]);
@@ -329,7 +369,9 @@ export function AppProvider({ children }) {
       updateDeliveryPartnerStatus,
       registerDeliveryPartner,
       resetDemoData,
-      calculatedMetrics
+      calculatedMetrics,
+      festivalDemandState,
+      updateFestivalDemandState
     }}>
       {children}
     </AppContext.Provider>
