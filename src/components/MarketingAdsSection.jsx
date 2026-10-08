@@ -1,236 +1,833 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Megaphone, BarChart2, Facebook, Instagram, Plus, Info, ChevronRight, IndianRupee } from 'lucide-react';
-
-const PLATFORMS = [
-  { id: 'instagram', label: 'Instagram', icon: Instagram, color: '#E1306C' },
-  { id: 'facebook', label: 'Facebook', icon: Facebook, color: '#1877F2' }
-];
-
-const DEMO_CAMPAIGNS = [
-  {
-    id: 'camp-1', name: 'Deepavali Holige Special',
-    product: 'Deepavali Holige & Savoury Combo',
-    budget: 500, dailyBudget: 100,
-    location: 'Hubballi + Dharwad', radius: '10 km',
-    startDate: '2026-10-28', endDate: '2026-11-05',
-    platforms: ['instagram', 'facebook'],
-    status: 'ACTIVE',
-    metrics: { spent: 320, reach: 2840, clicks: 118, orders: 14, revenue: 3640 }
-  }
-];
-
-function MetricBox({ label, value, sub }) {
-  return (
-    <div style={{ padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', textAlign: 'center' }}>
-      <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>{value}</div>
-      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{label}</div>
-      {sub && <div style={{ fontSize: '0.7rem', color: 'var(--text-subtle)' }}>{sub}</div>}
-    </div>
-  );
-}
+import {
+  Megaphone, TrendingUp, Sparkles, Share2, Eye, ShoppingBag,
+  CheckCircle2, AlertCircle, Copy, ExternalLink, Globe, Award,
+  BarChart2, Zap, Tag, Instagram, Facebook, ArrowRight, ShieldCheck, X
+} from 'lucide-react';
 
 export default function MarketingAdsSection() {
-  const { activeSeller } = useApp();
-  const [campaigns, setCampaigns] = useState(DEMO_CAMPAIGNS);
-  const [showNew, setShowNew] = useState(false);
-  const [selected, setSelected] = useState(null);
-  const [metaConnected] = useState(false); // In real app: check for Meta API credentials
+  const { activeSeller, showToast } = useApp();
 
-  const [form, setForm] = useState({
-    name: '', product: '', budget: '', dailyBudget: '',
-    location: 'Hubballi + Dharwad', radius: '10',
-    startDate: '', endDate: '',
-    platforms: ['instagram', 'facebook'],
-    cta: 'WhatsApp'
+  // Local state for deterministic simulation
+  const [visibilityScore, setVisibilityScore] = useState(68);
+  const [campaignActive, setCampaignActive] = useState(false);
+  const [metaSimulated, setMetaSimulated] = useState(false);
+  const [internalFeatured, setInternalFeatured] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isLoadingLaunch, setIsLoadingLaunch] = useState(false);
+  const [showAiCampaign, setShowAiCampaign] = useState(false);
+  const [showWhatsappText, setShowWhatsappText] = useState(false);
+  const [copiedWhatsapp, setCopiedWhatsapp] = useState(false);
+
+  // Promotion Form State
+  const [promoForm, setPromoForm] = useState({
+    product: 'Kasuti Handloom Saree',
+    audience: 'Festival shoppers',
+    location: 'Hubballi + Dharwad',
+    duration: '7 days',
+    budget: '250'
   });
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const togglePlat = (id) => setForm(f => ({
-    ...f,
-    platforms: f.platforms.includes(id) ? f.platforms.filter(p => p !== id) : [...f.platforms, id]
-  }));
+  // Metrics State
+  const [metrics, setMetrics] = useState({
+    reach: 1240,
+    views: 318,
+    clicks: 14,
+    productVisits: 28,
+    orders: 7,
+    conversion: '5.6%',
+    revenue: 19600,
+    adSpend: 0
+  });
 
-  const handleCreate = (e) => {
-    e.preventDefault();
-    const newCamp = {
-      id: `camp-${Date.now()}`,
-      ...form,
-      budget: parseFloat(form.budget) || 0,
-      dailyBudget: parseFloat(form.dailyBudget) || 0,
-      status: 'DRAFT',
-      metrics: null
-    };
-    setCampaigns(c => [newCamp, ...c]);
-    setShowNew(false);
-    setForm({ name: '', product: '', budget: '', dailyBudget: '', location: 'Hubballi + Dharwad', radius: '10', startDate: '', endDate: '', platforms: ['instagram', 'facebook'], cta: 'WhatsApp' });
+  const handleLaunchPromotion = () => {
+    setIsLoadingLaunch(true);
+    setTimeout(() => {
+      setIsLoadingLaunch(false);
+      setCampaignActive(true);
+      setVisibilityScore(86);
+      setMetrics({
+        reach: 5740,
+        views: 3820,
+        clicks: 184,
+        productVisits: 96,
+        orders: 12,
+        conversion: '12.5%',
+        revenue: 33600,
+        adSpend: Number(promoForm.budget) || 250
+      });
+      setShowCreateModal(false);
+      showToast('✓ Promotion is Live! Reach expanded to +4,500 local customers.', 'success');
+    }, 1000);
   };
 
-  if (selected) {
-    const camp = campaigns.find(c => c.id === selected);
-    const roas = camp.metrics ? (camp.metrics.revenue / camp.metrics.spent).toFixed(1) : null;
-    return (
-      <div>
-        <button onClick={() => setSelected(null)} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.8125rem', marginBottom: '1rem', padding: 0 }}>
-          ← Back to Campaigns
-        </button>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '1rem' }}>{camp.name}</div>
-            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>{camp.product}</div>
-          </div>
-          <span style={{ padding: '0.2rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 700, background: camp.status === 'ACTIVE' ? '#dcfce7' : '#f3f4f6', color: camp.status === 'ACTIVE' ? '#16a34a' : 'var(--text-muted)' }}>{camp.status}</span>
-        </div>
+  const handleSimulateMeta = () => {
+    setMetaSimulated(true);
+    showToast('✓ Meta Campaign Submitted (Simulation). Ad ready for review.', 'info');
+  };
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
-          <div style={{ padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', fontSize: '0.8125rem' }}>
-            <div style={{ color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Platforms</div>
-            <div style={{ fontWeight: 600 }}>{camp.platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' + ')}</div>
-          </div>
-          <div style={{ padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', fontSize: '0.8125rem' }}>
-            <div style={{ color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Location</div>
-            <div style={{ fontWeight: 600 }}>{camp.location} ({camp.radius} km)</div>
-          </div>
-          <div style={{ padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', fontSize: '0.8125rem' }}>
-            <div style={{ color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Budget</div>
-            <div style={{ fontWeight: 600 }}>₹{camp.budget} total / ₹{camp.dailyBudget}/day</div>
-          </div>
-          <div style={{ padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', fontSize: '0.8125rem' }}>
-            <div style={{ color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Duration</div>
-            <div style={{ fontWeight: 600 }}>{camp.startDate} → {camp.endDate}</div>
-          </div>
-        </div>
+  const handleFeatureProduct = () => {
+    setInternalFeatured(true);
+    showToast('✓ Product Featured in Hubballi recommendations!', 'success');
+  };
 
-        {camp.metrics ? (
-          <>
-            <div style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <BarChart2 size={14} color="var(--accent)" /> Campaign Performance
-              <span style={{ fontSize: '0.7rem', fontWeight: 400, color: 'var(--text-muted)' }}>(demo data)</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <MetricBox label="Amount Spent" value={`₹${camp.metrics.spent}`} />
-              <MetricBox label="Reach" value={camp.metrics.reach.toLocaleString('en-IN')} sub="people saw this" />
-              <MetricBox label="Clicks" value={camp.metrics.clicks} sub="link clicks" />
-              <MetricBox label="Orders" value={camp.metrics.orders} sub="from this campaign" />
-              <MetricBox label="Revenue" value={`₹${camp.metrics.revenue.toLocaleString('en-IN')}`} />
-              <MetricBox label="ROAS" value={`${roas}x`} sub="return on ad spend" />
-            </div>
-          </>
-        ) : (
-          <div style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', fontSize: '0.8125rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-            Campaign is in DRAFT. Connect Meta account and launch to see performance metrics.
-          </div>
-        )}
+  const whatsappMessageText = `🪷 NEW FROM ${activeSeller?.name?.toUpperCase() || 'RADHA KASUTI KENDRA'}
 
-        {!metaConnected && (
-          <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#fefce8', border: '1px solid #fde68a', borderRadius: 'var(--radius-md)', fontSize: '0.8125rem', color: '#92400e' }}>
-            <strong>Connect Meta Account</strong> to publish this campaign to Instagram and Facebook. Meta Business credentials required.
-            <div style={{ marginTop: '0.4rem' }}>
-              <button className="btn btn-secondary btn-sm">Connect Meta Business Account</button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
+Handcrafted Kasuti Sarees - ₹2,800
+Traditional local craftsmanship from Hubballi.
+
+🛍️ Available now on Sakhi Market: https://nammasiri.hubballi/s/${activeSeller?.id || 'seller-2'}`;
+
+  const handleCopyWhatsapp = () => {
+    navigator.clipboard.writeText(whatsappMessageText);
+    setCopiedWhatsapp(true);
+    showToast('Message copied to clipboard!', 'info');
+    setTimeout(() => setCopiedWhatsapp(false), 2000);
+  };
+
+  const handleShareWhatsapp = () => {
+    const text = encodeURIComponent(whatsappMessageText);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+    showToast('Opened WhatsApp sharing!', 'success');
+  };
 
   return (
-    <div>
-      {/* Meta connection status */}
-      <div style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: metaConnected ? '#f0fdf4' : '#fefce8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem' }}>
-        <div>
-          <strong style={{ color: metaConnected ? '#16a34a' : '#b45309' }}>
-            {metaConnected ? '✓ Meta Account Connected' : 'Meta Account Not Connected'}
-          </strong>
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.775rem', marginTop: '0.1rem' }}>
-            {metaConnected ? 'Ready to publish campaigns to Instagram & Facebook' : 'Connect to run real campaigns on Instagram & Facebook'}
-          </div>
-        </div>
-        {!metaConnected && (
-          <button className="btn btn-secondary btn-sm">Connect Account</button>
-        )}
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-      {/* Campaigns */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-        <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>Campaigns ({campaigns.length})</div>
-        <button onClick={() => setShowNew(s => !s)} className="btn btn-secondary btn-sm">
-          <Plus size={13} /><span>New Campaign</span>
+      {/* HEADER TITLE */}
+      <div style={{
+        background: 'linear-gradient(135deg, #fff1f2, #ffe4e6)',
+        border: '1.5px solid #fecdd3',
+        borderRadius: 'var(--radius-md)',
+        padding: '1.25rem 1.5rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '1rem'
+      }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#be185d', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase' }}>
+            <Megaphone size={14} /> Sakhi Growth Suite
+          </div>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#881337', margin: '0.2rem 0' }}>
+            📣 Sakhi Growth & Marketing
+          </h2>
+          <p style={{ fontSize: '0.875rem', color: '#be185d', margin: 0, fontWeight: 500 }}>
+            Reach more customers without needing to know digital marketing.
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            const el = document.getElementById('promote-product-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="btn btn-primary"
+          style={{
+            backgroundColor: '#be185d',
+            color: '#ffffff',
+            fontWeight: 800,
+            fontSize: '0.85rem',
+            padding: '0.5rem 1rem',
+            border: 'none',
+            borderRadius: '0.5rem'
+          }}
+        >
+          🚀 Promote Product &rarr;
         </button>
       </div>
 
-      {/* New campaign form */}
-      {showNew && (
-        <form onSubmit={handleCreate} style={{ marginBottom: '1rem', padding: '0.875rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)' }}>
-          <div style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.75rem' }}>New Campaign</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-            {[
-              { label: 'Campaign Name', k: 'name', placeholder: 'e.g. Deepavali Holige' },
-              { label: 'Product / Offer', k: 'product', placeholder: 'e.g. Holige Box ₹250' },
-              { label: 'Total Budget (₹)', k: 'budget', placeholder: '500', type: 'number' },
-              { label: 'Daily Budget (₹)', k: 'dailyBudget', placeholder: '100', type: 'number' },
-              { label: 'Start Date', k: 'startDate', type: 'date' },
-              { label: 'End Date', k: 'endDate', type: 'date' },
-            ].map(({ label, k, placeholder, type = 'text' }) => (
-              <div key={k}>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.2rem' }}>{label}</label>
-                <input type={type} value={form[k]} onChange={e => set(k, e.target.value)}
-                  placeholder={placeholder} required
-                  style={{ width: '100%', padding: '0.4rem 0.6rem', fontSize: '0.8125rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', boxSizing: 'border-box' }} />
-              </div>
-            ))}
-          </div>
-
-          <div style={{ marginTop: '0.6rem' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '0.3rem' }}>Platforms</label>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {PLATFORMS.map(({ id, label, icon: Icon, color }) => (
-                <button key={id} type="button" onClick={() => togglePlat(id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.35rem 0.6rem', border: `1px solid ${form.platforms.includes(id) ? color : 'var(--border-color)'}`, borderRadius: 'var(--radius-sm)', background: form.platforms.includes(id) ? `${color}15` : '#fff', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 600, color: form.platforms.includes(id) ? color : 'var(--text-muted)' }}>
-                  <Icon size={13} /> {label}
-                </button>
-              ))}
+      {/* 1. VISIBILITY SCORE CARD */}
+      <div className="card" style={{ padding: '1.25rem', border: '1.5px solid var(--border-color)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+              Your Business Visibility
+            </h3>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              Calculated based on listing optimization & local promotion reach
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-            <button type="submit" className="btn btn-primary btn-sm">Create Campaign Draft</button>
-            <button type="button" onClick={() => setShowNew(false)} className="btn btn-secondary btn-sm">Cancel</button>
+          <div style={{ textAlign: 'right' }}>
+            <span style={{ fontSize: '1.8rem', fontWeight: 900, color: visibilityScore >= 80 ? '#16a34a' : '#be185d' }}>
+              {visibilityScore}
+            </span>
+            <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-subtle)' }}> / 100</span>
           </div>
-        </form>
-      )}
-
-      {/* Campaign list */}
-      {campaigns.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontSize: '0.875rem', border: '1px dashed var(--border-color)', borderRadius: 'var(--radius-md)' }}>
-          <Megaphone size={28} style={{ marginBottom: '0.5rem', opacity: 0.4 }} />
-          <div>No campaigns yet. Create your first one above.</div>
         </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {campaigns.map(camp => (
-            <div key={camp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: '#fff' }}>
+
+        {/* Progress Bar */}
+        <div style={{ height: 12, backgroundColor: '#f1f5f9', borderRadius: 6, overflow: 'hidden', marginBottom: '1rem' }}>
+          <div style={{
+            width: `${visibilityScore}%`,
+            height: '100%',
+            background: visibilityScore >= 80 ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f472b6, #be185d)',
+            borderRadius: 6,
+            transition: 'width 0.6s ease'
+          }} />
+        </div>
+
+        {/* Visibility Factors */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.6rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', color: '#166534', fontWeight: 600 }}>
+            <CheckCircle2 size={16} color="#16a34a" /> Business profile complete
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', color: '#166534', fontWeight: 600 }}>
+            <CheckCircle2 size={16} color="#16a34a" /> 3 products listed
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', color: '#166534', fontWeight: 600 }}>
+            <CheckCircle2 size={16} color="#16a34a" /> Festival campaign available
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', color: campaignActive ? '#166534' : '#b45309', fontWeight: 600 }}>
+            {campaignActive ? <CheckCircle2 size={16} color="#16a34a" /> : <AlertCircle size={16} color="#d97706" />}
+            {campaignActive ? 'Social promotion active' : 'Social promotion not active'}
+          </div>
+        </div>
+
+        {/* Recommendation */}
+        <div style={{
+          background: '#fff1f2',
+          border: '1px solid #fecdd3',
+          borderRadius: '0.65rem',
+          padding: '0.85rem 1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
+        }}>
+          <div style={{ fontSize: '0.85rem', color: '#881337', fontWeight: 600 }}>
+            💡 <strong>Recommendation:</strong> Promoting your business could help you reach more local customers.
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="btn btn-primary btn-sm"
+            style={{ backgroundColor: '#be185d', color: '#ffffff', fontWeight: 800, border: 'none' }}
+          >
+            Improve Visibility &rarr;
+          </button>
+        </div>
+      </div>
+
+      {/* 2. PROMOTE A PRODUCT */}
+      <div id="promote-product-section" className="card" style={{ padding: '1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+              🚀 Promote Your Product
+            </h3>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              Select a product to boost reach across Hubballi-Dharwad
+            </div>
+          </div>
+
+          {campaignActive && (
+            <span className="badge badge-open" style={{ fontSize: '0.78rem', padding: '0.3rem 0.6rem' }}>
+              🟢 ACTIVE CAMPAIGN
+            </span>
+          )}
+        </div>
+
+        {/* Product Card Showcase */}
+        <div style={{
+          border: '1.5px solid var(--border-color)',
+          borderRadius: '0.85rem',
+          padding: '1.15rem',
+          background: '#ffffff',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          <div>
+            <span className="badge badge-neutral" style={{ fontSize: '0.7rem', marginBottom: '0.3rem' }}>
+              Kasuti / Embroidery
+            </span>
+            <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', margin: '0.2rem 0' }}>
+              Kasuti Handloom Saree
+            </h4>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#be185d' }}>
+              ₹2,800 <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)', fontWeight: 400 }}>/ 1 Saree</span>
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+              Proprietor: {activeSeller?.ownerName || 'Radha Kulkarni'} • {activeSeller?.location || 'Keshwapur, Hubballi'}
+            </div>
+          </div>
+
+          {/* Current Stats */}
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ textAlign: 'center', background: '#fafafa', border: '1px solid var(--border-color)', padding: '0.5rem 0.85rem', borderRadius: '0.5rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>REACH</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>{metrics.reach.toLocaleString()}</div>
+            </div>
+            <div style={{ textAlign: 'center', background: '#fafafa', border: '1px solid var(--border-color)', padding: '0.5rem 0.85rem', borderRadius: '0.5rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>VIEWS</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>{metrics.views.toLocaleString()}</div>
+            </div>
+            <div style={{ textAlign: 'center', background: '#fafafa', border: '1px solid var(--border-color)', padding: '0.5rem 0.85rem', borderRadius: '0.5rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>ORDERS</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#16a34a' }}>{metrics.orders}</div>
+            </div>
+          </div>
+
+          <div>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="btn btn-primary"
+              style={{
+                backgroundColor: '#be185d',
+                color: '#ffffff',
+                fontWeight: 800,
+                fontSize: '0.9rem',
+                padding: '0.6rem 1.25rem',
+                border: 'none',
+                boxShadow: '0 4px 12px rgba(190, 24, 93, 0.25)'
+              }}
+            >
+              Create Promotion &rarr;
+            </button>
+          </div>
+        </div>
+
+        {/* Active Campaign Info Box if active */}
+        {campaignActive && (
+          <div style={{
+            marginTop: '1rem',
+            background: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            borderRadius: '0.75rem',
+            padding: '1rem',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+            gap: '0.75rem',
+            fontSize: '0.8125rem'
+          }}>
+            <div><span style={{ color: '#166534', fontWeight: 600 }}>Status:</span> <strong>🟢 ACTIVE</strong></div>
+            <div><span style={{ color: '#166534', fontWeight: 600 }}>Platform:</span> <strong>Sakhi + Meta Ads</strong></div>
+            <div><span style={{ color: '#166534', fontWeight: 600 }}>Duration:</span> <strong>{promoForm.duration}</strong></div>
+            <div><span style={{ color: '#166534', fontWeight: 600 }}>Budget:</span> <strong>₹{promoForm.budget}</strong></div>
+            <div><span style={{ color: '#166534', fontWeight: 600 }}>Target:</span> <strong>{promoForm.location}</strong></div>
+            <div><span style={{ color: '#166534', fontWeight: 600 }}>Clicks:</span> <strong>{metrics.clicks}</strong></div>
+            <div><span style={{ color: '#166534', fontWeight: 600 }}>Orders:</span> <strong>{metrics.orders}</strong></div>
+          </div>
+        )}
+      </div>
+
+      {/* 5. META ADS SIMULATION & 6. INTERNAL PROMOTION */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+
+        {/* META ADS SIMULATION CARD */}
+        <div className="card" style={{ padding: '1.25rem', border: '1.5px solid #bfdbfe' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#1d4ed8', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+            <Globe size={14} /> Reach Beyond Sakhi Market
+          </div>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e3a8a', margin: '0.2rem 0' }}>
+            Promote on Meta (Instagram & Facebook)
+          </h3>
+          <p style={{ fontSize: '0.8125rem', color: '#3b82f6', marginBottom: '1rem', lineHeight: 1.4 }}>
+            Sakhi can help entrepreneurs create campaigns for platforms such as Instagram and Facebook.
+          </p>
+
+          {/* SIMULATED AD PREVIEW BOX */}
+          <div style={{
+            background: '#ffffff',
+            border: '1px solid #cbd5e1',
+            borderRadius: '0.75rem',
+            padding: '0.875rem',
+            marginBottom: '1rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', fontSize: '0.75rem' }}>
+              <span style={{ color: '#64748b', fontWeight: 600 }}>Sponsored Ad Preview</span>
+              <span style={{ backgroundColor: '#eff6ff', color: '#1d4ed8', fontWeight: 700, padding: '0.1rem 0.4rem', borderRadius: '0.3rem' }}>
+                Meta Demo
+              </span>
+            </div>
+
+            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '0.5rem' }}>
+              <div style={{ fontWeight: 800, fontSize: '0.875rem', color: '#0f172a' }}>
+                {activeSeller?.name || 'Radha Kasuti Kendra'}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.4rem' }}>
+                Sponsored • Hubballi
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#be185d', marginBottom: '0.2rem' }}>
+                🪷 Handcrafted Kasuti Sarees
+              </div>
+              <div style={{ fontSize: '0.78rem', color: '#334155', marginBottom: '0.6rem', lineHeight: 1.35 }}>
+                Traditional craftsmanship. Made locally in Hubballi. Premium authentic silk.
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '0.4rem 0.6rem', borderRadius: '0.4rem' }}>
+                <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#0f172a' }}>₹2,800</span>
+                <span style={{ background: '#1877f2', color: '#fff', fontSize: '0.72rem', fontWeight: 700, padding: '0.25rem 0.65rem', borderRadius: '0.3rem' }}>
+                  Shop Now
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+            <div>• Objective: <strong>Get more customers</strong></div>
+            <div>• Target Audience: <strong>People within Hubballi-Dharwad</strong></div>
+            <div>• Budget: <strong>₹250</strong></div>
+          </div>
+
+          {metaSimulated ? (
+            <div style={{ background: '#dcfce7', border: '1px solid #86efac', borderRadius: '0.5rem', padding: '0.6rem 0.75rem', fontSize: '0.8125rem', color: '#166534', fontWeight: 700 }}>
+              ✓ Meta campaign created (Simulation)
+              <div style={{ fontSize: '0.72rem', fontWeight: 400, color: '#15803d', marginTop: '0.15rem' }}>
+                Your advertisement would now be submitted to Meta for review.
+              </div>
+              <div style={{ fontSize: '0.68rem', color: '#166534', fontStyle: 'italic', marginTop: '0.3rem' }}>
+                Simulation only — no real ad was created or charged.
+              </div>
+            </div>
+          ) : (
+            <div>
+              <button
+                onClick={handleSimulateMeta}
+                className="btn btn-secondary"
+                style={{ width: '100%', justifyContent: 'center', borderColor: '#3b82f6', color: '#1d4ed8', fontWeight: 800, fontSize: '0.85rem' }}
+              >
+                <span>Simulate Meta Campaign</span>
+              </button>
+              <div style={{ fontSize: '0.7rem', color: '#64748b', textAlign: 'center', marginTop: '0.3rem' }}>
+                Simulation only — no real Meta connection required
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* INTERNAL SAKHI MARKET PROMOTION CARD */}
+        <div className="card" style={{ padding: '1.25rem', border: '1.5px solid #fbcfe8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#be185d', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+            <Award size={14} /> Marketplace Boost
+          </div>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#881337', margin: '0.2rem 0' }}>
+            🏪 Promote inside Sakhi Market
+          </h3>
+          <p style={{ fontSize: '0.8125rem', color: '#be185d', marginBottom: '1rem', lineHeight: 1.4 }}>
+            Get your products featured at the top of customer search and category feeds across Hubballi-Dharwad.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem', fontSize: '0.8125rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#166534', fontWeight: 600 }}>
+              <CheckCircle2 size={15} color="#16a34a" /> Featured seller placement
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#166534', fontWeight: 600 }}>
+              <CheckCircle2 size={15} color="#16a34a" /> Festival collection banner
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#166534', fontWeight: 600 }}>
+              <CheckCircle2 size={15} color="#16a34a" /> Trending near you feed
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#166534', fontWeight: 600 }}>
+              <CheckCircle2 size={15} color="#16a34a" /> Recommended products highlight
+            </div>
+          </div>
+
+          <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', borderRadius: '0.5rem', padding: '0.65rem 0.85rem', marginBottom: '1rem', fontSize: '0.8125rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Featured in Hubballi</span>
+            <strong>~2,800 impressions</strong>
+          </div>
+
+          {internalFeatured ? (
+            <div style={{ background: '#dcfce7', border: '1px solid #86efac', borderRadius: '0.5rem', padding: '0.65rem 0.85rem', fontSize: '0.8125rem', color: '#166534', fontWeight: 700 }}>
+              ✓ Product featured successfully
+              <div style={{ fontSize: '0.72rem', fontWeight: 400, color: '#15803d', marginTop: '0.15rem' }}>
+                Your product will appear in recommended/featured sections.
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={handleFeatureProduct}
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center', backgroundColor: '#be185d', color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', border: 'none' }}
+            >
+              Feature My Product &rarr;
+            </button>
+          )}
+        </div>
+
+      </div>
+
+      {/* 7. WHATSAPP SHARING & 9. AI MARKETING ASSISTANT */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+
+        {/* WHATSAPP SHARING */}
+        <div className="card" style={{ padding: '1.25rem', border: '1.5px solid #bbf7d0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#16a34a', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+            <Share2 size={14} /> Instant Customer Outreach
+          </div>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#14532d', margin: '0.2rem 0' }}>
+            💬 Share on WhatsApp
+          </h3>
+          <p style={{ fontSize: '0.8125rem', color: '#16a34a', marginBottom: '1rem' }}>
+            Reach your existing customers and WhatsApp community directly.
+          </p>
+
+          {!showWhatsappText ? (
+            <button
+              onClick={() => setShowWhatsappText(true)}
+              className="btn btn-secondary"
+              style={{ width: '100%', justifyContent: 'center', borderColor: '#22c55e', color: '#16a34a', fontWeight: 800, fontSize: '0.85rem' }}
+            >
+              Generate WhatsApp Promotion &rarr;
+            </button>
+          ) : (
+            <div>
+              <div style={{
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                borderRadius: '0.5rem',
+                padding: '0.85rem',
+                fontSize: '0.8125rem',
+                color: '#14532d',
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'monospace',
+                marginBottom: '0.875rem'
+              }}>
+                {whatsappMessageText}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  onClick={handleCopyWhatsapp}
+                  className="btn btn-secondary btn-sm"
+                  style={{ flex: 1, justifyContent: 'center', fontSize: '0.8rem' }}
+                >
+                  <Copy size={13} />
+                  <span>{copiedWhatsapp ? 'Copied!' : 'Copy Message'}</span>
+                </button>
+                <button
+                  onClick={handleShareWhatsapp}
+                  className="btn btn-primary btn-sm"
+                  style={{ flex: 1, justifyContent: 'center', backgroundColor: '#16a34a', fontSize: '0.8rem' }}
+                >
+                  <Share2 size={13} />
+                  <span>Share on WhatsApp</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 9. AI MARKETING ASSISTANT SIMULATION */}
+        <div className="card" style={{ padding: '1.25rem', border: '1.5px solid #fbcfe8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#be185d', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+            <Sparkles size={14} /> Automated Promotion Engine
+          </div>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#881337', margin: '0.2rem 0' }}>
+            ✨ Sakhi Marketing Assistant
+          </h3>
+          <p style={{ fontSize: '0.8125rem', color: '#be185d', marginBottom: '1rem' }}>
+            Let Sakhi create your promotion automatically using smart business templates.
+          </p>
+
+          {!showAiCampaign ? (
+            <button
+              onClick={() => setShowAiCampaign(true)}
+              className="btn btn-primary"
+              style={{ width: '100%', justifyContent: 'center', backgroundColor: '#be185d', border: 'none', fontWeight: 800, fontSize: '0.85rem' }}
+            >
+              <Sparkles size={14} />
+              <span>Generate Campaign &rarr;</span>
+            </button>
+          ) : (
+            <div style={{
+              background: '#fff1f2',
+              border: '1px solid #fecdd3',
+              borderRadius: '0.65rem',
+              padding: '0.85rem',
+              fontSize: '0.8125rem',
+              color: '#881337'
+            }}>
+              <div style={{ fontWeight: 800, color: '#be185d', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <Sparkles size={14} /> AI Suggested Campaign:
+              </div>
+              <div style={{ marginBottom: '0.3rem' }}>• <strong>Headline:</strong> "Handcrafted Kasuti Sarees from Hubballi"</div>
+              <div style={{ marginBottom: '0.3rem' }}>• <strong>Description:</strong> "Discover beautiful traditional Kasuti craftsmanship made by local women entrepreneurs."</div>
+              <div style={{ marginBottom: '0.3rem' }}>• <strong>Audience:</strong> "Women shoppers + festival shoppers in Hubballi-Dharwad"</div>
+              <div style={{ marginBottom: '0.3rem' }}>• <strong>Platform:</strong> "Instagram + Sakhi Market"</div>
+              <div style={{ marginBottom: '0.6rem' }}>• <strong>Budget:</strong> "₹250 for 7 days"</div>
+
+              <button
+                onClick={() => {
+                  setShowCreateModal(true);
+                  setShowAiCampaign(false);
+                }}
+                className="btn btn-primary btn-sm"
+                style={{ width: '100%', justifyContent: 'center', backgroundColor: '#be185d', fontSize: '0.78rem' }}
+              >
+                Apply AI Campaign Settings &rarr;
+              </button>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* 8. MARKETING ANALYTICS */}
+      <div className="card" style={{ padding: '1.25rem', border: '1.5px solid var(--border-color)' }}>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <BarChart2 size={18} color="var(--accent)" /> Campaign Performance Analytics
+        </h3>
+
+        {/* Analytics Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+          gap: '0.75rem',
+          marginBottom: '1.25rem'
+        }}>
+          <div style={{ background: '#fafafa', border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '0.65rem 0.75rem' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>REACH</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>{metrics.reach.toLocaleString()}</div>
+          </div>
+          <div style={{ background: '#fafafa', border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '0.65rem 0.75rem' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>VIEWS</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>{metrics.views.toLocaleString()}</div>
+          </div>
+          <div style={{ background: '#fafafa', border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '0.65rem 0.75rem' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>CLICKS</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#be185d' }}>{metrics.clicks}</div>
+          </div>
+          <div style={{ background: '#fafafa', border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '0.65rem 0.75rem' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>PRODUCT VISITS</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>{metrics.productVisits}</div>
+          </div>
+          <div style={{ background: '#fafafa', border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '0.65rem 0.75rem' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>ORDERS</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#16a34a' }}>{metrics.orders}</div>
+          </div>
+          <div style={{ background: '#fafafa', border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '0.65rem 0.75rem' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>CONVERSION</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#16a34a' }}>{metrics.conversion}</div>
+          </div>
+          <div style={{ background: '#fafafa', border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '0.65rem 0.75rem' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>REVENUE</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#16a34a' }}>₹{metrics.revenue.toLocaleString()}</div>
+          </div>
+          <div style={{ background: '#fafafa', border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '0.65rem 0.75rem' }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>AD SPEND</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#be185d' }}>₹{metrics.adSpend}</div>
+          </div>
+        </div>
+
+        {/* Visual Comparison Card (BEFORE vs AFTER) */}
+        <div style={{
+          background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
+          border: '1px solid #cbd5e1',
+          borderRadius: '0.75rem',
+          padding: '1rem',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '1rem'
+        }}>
+          <div style={{ background: '#fff', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>BEFORE PROMOTION</div>
+            <div style={{ fontSize: '0.9rem', color: '#334155', marginTop: '0.2rem' }}>Reach: <strong>1,240 people</strong></div>
+            <div style={{ fontSize: '0.9rem', color: '#334155' }}>Orders: <strong>7 orders</strong></div>
+          </div>
+          <div style={{ background: '#fff1f2', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #fecdd3' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#be185d', textTransform: 'uppercase' }}>AFTER PROMOTION</div>
+            <div style={{ fontSize: '0.9rem', color: '#881337', marginTop: '0.2rem' }}>Reach: <strong>5,740 people (+362%)</strong></div>
+            <div style={{ fontSize: '0.9rem', color: '#881337' }}>Orders: <strong>12 orders (+71%)</strong></div>
+          </div>
+        </div>
+      </div>
+
+      {/* 10. GROWTH MESSAGE */}
+      <div style={{
+        background: '#f8fafc',
+        border: '1px solid #cbd5e1',
+        borderRadius: '0.85rem',
+        padding: '1.25rem',
+        fontSize: '0.85rem'
+      }}>
+        <div style={{ fontWeight: 800, color: '#0f172a', marginBottom: '0.4rem', fontSize: '0.95rem' }}>
+          Why Sakhi Growth matters
+        </div>
+        <div style={{ color: '#475569', marginBottom: '0.75rem', lineHeight: 1.45 }}>
+          Traditional problem: <em>"I make good products, but customers don't know I exist."</em><br />
+          Sakhi solution: <strong>Create → Promote → Reach → Sell → Grow</strong>
+        </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '0.5rem',
+          fontWeight: 700,
+          color: '#1e293b'
+        }}>
+          <div>📍 Local discovery</div>
+          <div>📣 Digital promotion</div>
+          <div>📱 Social media reach</div>
+          <div>🛍️ More product visibility</div>
+          <div>📈 Business growth</div>
+        </div>
+      </div>
+
+      {/* CREATE PROMOTION MODAL SIMULATION */}
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)} style={{ zIndex: 1100 }}>
+          <div
+            className="modal-content"
+            style={{ maxWidth: 480, padding: 0, overflow: 'hidden', borderRadius: '1.15rem' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ background: 'linear-gradient(135deg, #be185d, #9d174d)', padding: '1.25rem 1.5rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>{camp.name}</div>
-                <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)' }}>
-                  {camp.platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' + ')} • ₹{camp.budget} budget
-                </div>
-                {camp.metrics && (
-                  <div style={{ fontSize: '0.72rem', color: '#16a34a', marginTop: '0.2rem' }}>
-                    ₹{camp.metrics.spent} spent • {camp.metrics.orders} orders • ₹{camp.metrics.revenue} revenue
-                  </div>
-                )}
+                <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>Create Your Promotion</div>
+                <div style={{ fontSize: '0.75rem', opacity: 0.85 }}>Sakhi Local & Social Reach Campaign</div>
               </div>
-              <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                <span style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', fontSize: '0.7rem', fontWeight: 700, background: camp.status === 'ACTIVE' ? '#dcfce7' : '#f3f4f6', color: camp.status === 'ACTIVE' ? '#16a34a' : 'var(--text-muted)' }}>{camp.status}</span>
-                <button onClick={() => setSelected(camp.id)} className="btn btn-secondary btn-sm">
-                  <ChevronRight size={13} />
-                </button>
-              </div>
+              <button onClick={() => setShowCreateModal(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <X size={14} />
+              </button>
             </div>
-          ))}
+
+            <div style={{ padding: '1.5rem', backgroundColor: '#ffffff' }}>
+              {isLoadingLaunch ? (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                  <div className="animate-spin" style={{ width: 44, height: 44, border: '4px solid #fecdd3', borderTopColor: '#be185d', borderRadius: '50%', margin: '0 auto 1rem' }} />
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#881337' }}>Creating your campaign...</div>
+                  <div style={{ fontSize: '0.85rem', color: '#be185d', marginTop: '0.2rem' }}>Targeting Hubballi-Dharwad local shoppers</div>
+                </div>
+              ) : (
+                <form onSubmit={e => { e.preventDefault(); handleLaunchPromotion(); }}>
+
+                  {/* Step 1: Select Product */}
+                  <div style={{ marginBottom: '0.875rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                      Step 1: Select Product
+                    </label>
+                    <input
+                      type="text"
+                      value={promoForm.product}
+                      onChange={e => setPromoForm({ ...promoForm, product: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.875rem', border: '1px solid var(--border-color)', borderRadius: '0.4rem', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  {/* Step 2: Choose Target Audience */}
+                  <div style={{ marginBottom: '0.875rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                      Step 2: Choose Target Audience
+                    </label>
+                    <select
+                      value={promoForm.audience}
+                      onChange={e => setPromoForm({ ...promoForm, audience: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.875rem', border: '1px solid var(--border-color)', borderRadius: '0.4rem', boxSizing: 'border-box' }}
+                    >
+                      <option value="Festival shoppers">Festival shoppers (Recommended)</option>
+                      <option value="Local customers">Local customers</option>
+                      <option value="Women shoppers">Women shoppers</option>
+                      <option value="All nearby customers">All nearby customers</option>
+                    </select>
+                  </div>
+
+                  {/* Step 3: Location */}
+                  <div style={{ marginBottom: '0.875rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                      Step 3: Choose Location
+                    </label>
+                    <select
+                      value={promoForm.location}
+                      onChange={e => setPromoForm({ ...promoForm, location: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.875rem', border: '1px solid var(--border-color)', borderRadius: '0.4rem', boxSizing: 'border-box' }}
+                    >
+                      <option value="Hubballi + Dharwad">Hubballi + Dharwad</option>
+                      <option value="Keshwapur & Vidyanagar">Keshwapur & Vidyanagar</option>
+                      <option value="Gokul Road & Shirur Park">Gokul Road & Shirur Park</option>
+                    </select>
+                  </div>
+
+                  {/* Step 4 & 5: Duration & Budget */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                        Step 4: Duration
+                      </label>
+                      <select
+                        value={promoForm.duration}
+                        onChange={e => setPromoForm({ ...promoForm, duration: e.target.value })}
+                        style={{ width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.875rem', border: '1px solid var(--border-color)', borderRadius: '0.4rem', boxSizing: 'border-box' }}
+                      >
+                        <option value="3 days">3 days</option>
+                        <option value="7 days">7 days (Default)</option>
+                        <option value="14 days">14 days</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>
+                        Step 5: Budget
+                      </label>
+                      <select
+                        value={promoForm.budget}
+                        onChange={e => setPromoForm({ ...promoForm, budget: e.target.value })}
+                        style={{ width: '100%', padding: '0.5rem 0.75rem', fontSize: '0.875rem', border: '1px solid var(--border-color)', borderRadius: '0.4rem', boxSizing: 'border-box' }}
+                      >
+                        <option value="100">₹100</option>
+                        <option value="250">₹250 (Default)</option>
+                        <option value="500">₹500</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Estimated Reach Preview Box */}
+                  <div style={{
+                    background: '#fff1f2',
+                    border: '1px solid #fecdd3',
+                    borderRadius: '0.65rem',
+                    padding: '0.85rem',
+                    marginBottom: '1.25rem',
+                    fontSize: '0.8125rem'
+                  }}>
+                    <div style={{ fontWeight: 800, color: '#881337', marginBottom: '0.35rem' }}>Estimated Reach</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#be185d', marginBottom: '0.2rem' }}>
+                      <span>Before promotion:</span> <strong>1,240</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#be185d', marginBottom: '0.2rem' }}>
+                      <span>Estimated additional reach:</span> <strong>+4,500</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#881337', fontWeight: 800, borderTop: '1px dashed #f472b6', paddingTop: '0.35rem', marginTop: '0.35rem' }}>
+                      <span>Estimated total reach:</span> <strong>5,740 people</strong>
+                    </div>
+
+                    <div style={{ fontSize: '0.7rem', color: '#9d174d', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                      Demo estimate — actual results depend on campaign performance.
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      backgroundColor: '#be185d',
+                      color: '#ffffff',
+                      fontWeight: 800,
+                      fontSize: '0.95rem',
+                      padding: '0.7rem',
+                      borderRadius: '0.5rem',
+                      border: 'none',
+                      boxShadow: '0 4px 12px rgba(190, 24, 93, 0.3)'
+                    }}
+                  >
+                    🚀 Launch Promotion &rarr;
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
         </div>
       )}
+
     </div>
   );
 }
